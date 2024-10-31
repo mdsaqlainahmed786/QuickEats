@@ -46,7 +46,7 @@ UserRouter.post('/sign-up', (req, res) => __awaiter(void 0, void 0, void 0, func
         }
     });
     const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET);
-    res.cookie("AUTH_TOKEN", token, { httpOnly: true });
+    res.cookie("AUTH_TOKEN", token);
     res.status(200).json({
         message: 'User created successfully',
         data: user
@@ -72,7 +72,7 @@ UserRouter.post('/sign-in', (req, res) => __awaiter(void 0, void 0, void 0, func
         return;
     }
     const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET);
-    res.cookie("AUTH_TOKEN", token, { httpOnly: true });
+    res.cookie("AUTH_TOKEN", token);
     res.status(200).json({
         message: 'User logged in successfully',
         data: user
@@ -81,5 +81,27 @@ UserRouter.post('/sign-in', (req, res) => __awaiter(void 0, void 0, void 0, func
 UserRouter.get("/logout", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.clearCookie("AUTH_TOKEN");
     res.status(200).json({ message: "Logged out successfully" });
+}));
+UserRouter.get("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const token = req.cookies.AUTH_TOKEN;
+    if (!token) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+    }
+    try {
+        const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+        const user = yield prisma.user.findUnique({
+            where: { id: decoded.userId }
+        });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
+        //  console.log("USER>>>>>>>>", user);
+        res.status(200).json({ userName: user.userName, email: user.email });
+    }
+    catch (error) {
+        res.status(401).json({ error: "Unauthorized" });
+    }
 }));
 exports.default = UserRouter;
