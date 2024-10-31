@@ -1,10 +1,14 @@
-import landingpageImg from '../assets/googlePng.png'
+import landingpageImg from "../assets/googlePng.png";
+import { useNavigate } from "react-router-dom";
 const LandingPage = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-white flex flex-col items-center">
       {/* Hero Section */}
       <header className="w-full py-8 px-4 bg-red-600 text-white text-center">
-        <h1 className="text-4xl md:text-6xl font-bold">Deliver To Your Doorstep</h1>
+        <h1 className="text-4xl md:text-6xl font-bold">
+          Deliver To Your Doorstep
+        </h1>
         <p className="mt-4 text-lg md:text-xl">
           Fast and reliable delivery service, anywhere on Google Maps.
         </p>
@@ -14,11 +18,18 @@ const LandingPage = () => {
       <main className="flex flex-col md:flex-row items-center justify-between p-8 space-y-8 md:space-y-0 md:space-x-12">
         {/* Description */}
         <div className="text-center md:text-left max-w-md">
-          <h2 className="text-3xl font-semibold text-red-600">Track, Order & Relax</h2>
+          <h2 className="text-3xl font-semibold text-red-600">
+            Track, Order & Relax
+          </h2>
           <p className="mt-4 text-gray-700">
-            Order from your favorite stores and track deliveries to any point on the map. Enjoy a seamless, efficient delivery experience that keeps you updated every step of the way.
+            Order from your favorite stores and track deliveries to any point on
+            the map. Enjoy a seamless, efficient delivery experience that keeps
+            you updated every step of the way.
           </p>
-          <button className="mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-md">
+          <button
+            onClick={() => navigate("/maps")}
+            className="mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-md"
+          >
             Get Started
           </button>
         </div>
@@ -35,12 +46,15 @@ const LandingPage = () => {
 
       {/* Features Section */}
       <section className="w-full bg-red-50 py-12 px-8 pb-16 mt-8 text-center">
-        <h2 className="text-2xl font-semibold text-red-600 mb-8">Why Choose Us?</h2>
+        <h2 className="text-2xl font-semibold text-red-600 mb-8">
+          Why Choose Us?
+        </h2>
         <div className="flex flex-col mx-auto max-w-[60vw] md:mx-0 md:max-w-[100vw] md:flex-row justify-center space-y-8 md:space-y-0 md:space-x-8">
           <div className="p-6 max-w-xs bg-white shadow-lg rounded-lg">
             <h3 className="text-xl font-bold text-red-600">Live Tracking</h3>
             <p className="text-gray-700 mt-2">
-              Track your delivery on the map in real-time. No more wondering where your package is!
+              Track your delivery on the map in real-time. No more wondering
+              where your package is!
             </p>
           </div>
           <div className="p-6 max-w-xs bg-white shadow-lg rounded-lg">
