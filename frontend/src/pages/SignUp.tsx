@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import { usernameState } from "../RecoilStates/UserDetails";
 import axios from "axios";
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -10,11 +12,16 @@ const SignUp = () => {
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+ const username = useRecoilValue(usernameState);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
-
+  useEffect(() => {
+    if (username) {
+      navigate("/");
+    }
+  }, [username, navigate]);
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     try {

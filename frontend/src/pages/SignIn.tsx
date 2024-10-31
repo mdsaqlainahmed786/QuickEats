@@ -1,18 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import { usernameState } from "../RecoilStates/UserDetails";
 import axios from "axios";
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  
+  const username = useRecoilValue(usernameState);
+
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
+  useEffect(() => {
+    if (username) {
+      navigate("/");
+    }
+  }, [username, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +100,12 @@ const SignIn = () => {
               Sign In
             </Button>
           </form>
-          <span className="text-neutral-400 text-center flex justify-center py-5">Don't have a account? <Link className="text-red-500 hover:underline ml-1" to="/sign-up">SignUp</Link></span>
+          <span className="text-neutral-400 text-center flex justify-center py-5">
+            Don't have a account?{" "}
+            <Link className="text-red-500 hover:underline ml-1" to="/sign-up">
+              SignUp
+            </Link>
+          </span>
         </div>
       </div>
       <footer className="w-full bg-red-600 text-white text-center py-6">

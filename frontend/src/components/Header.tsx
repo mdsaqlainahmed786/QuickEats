@@ -2,11 +2,14 @@ import { useGetUser } from "@/hooks/useGetUser";
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { usernameState } from "@/RecoilStates/UserDetails";
+import { useSetRecoilState } from "recoil";
 import axios from "axios";
 const Header = () => {
   const { user } = useGetUser();
   const navigate = useNavigate();
-  console.log("THIS IS USER", user);
+  const setUsername = useSetRecoilState(usernameState);
   const onLogout = async() => {
     await axios.get("http://localhost:3000/api/v1/users/logout", {
       withCredentials: true
@@ -14,6 +17,13 @@ const Header = () => {
     navigate("/sign-in");
     window.location.reload();
   }
+  useEffect(() => {
+    if (user) {
+      setUsername(user.userName); // Set the username in Recoil state
+    } else {
+      setUsername(null); // Clear the username when no user is logged in
+    }
+  }, [user, setUsername]);
   // const res = useGetUser();
   // console.log(res);
   return (
