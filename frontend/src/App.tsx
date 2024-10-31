@@ -1,16 +1,17 @@
 //import { LocationDrawer } from "@/components/LocationDrawer";
 import Header from "./components/Header";
-import { PlaceComponent } from "./components/SearchPlaces";
+//import { PlaceComponent } from "./components/SearchPlaces";
 import "./App.css";
-import { BrowserRouter, Router, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
 function App() {
   return (
     <>
       <Header />
-      <PlaceComponent />
+      {/* <PlaceComponent /> */}
       <BrowserRouter>
         <Routes>
-          {/* <Router path="/" element={<PlaceComponent />} /> */}
+          <Route path="/" element={<LandingPage />} />
         </Routes>
       </BrowserRouter>
       {/* <LocationDrawer /> */}

@@ -27,11 +27,7 @@ UserRouter.post('/sign-up', async (req, res) => {
         res.status(400).json({ error: 'User already exists' });
         return;
     }
-
-
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-
-
     const user = await prisma.user.create({
         data: {
             userName,
@@ -54,8 +50,6 @@ UserRouter.post('/sign-in', async (req, res) => {
         return;
     }
     const { email, password } = bodyParser.data;
-
-
     const user = await prisma.user.findUnique({
         where: { email }
     });
@@ -63,7 +57,6 @@ UserRouter.post('/sign-in', async (req, res) => {
         res.status(400).json({ error: 'User not found' });
         return;
     }
-    3
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
         res.status(400).json({ error: 'Invalid password' });
