@@ -1,4 +1,3 @@
-import React from 'react';
 import landingpageImg from '../assets/googlePng.png'
 const LandingPage = () => {
   return (

@@ -66,7 +66,6 @@ UserRouter.post('/sign-in', (req, res) => __awaiter(void 0, void 0, void 0, func
         res.status(400).json({ error: 'User not found' });
         return;
     }
-    3;
     const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
     if (!isPasswordValid) {
         res.status(400).json({ error: 'Invalid password' });
