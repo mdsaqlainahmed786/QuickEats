@@ -1,7 +1,7 @@
 // PlaceComponent.js
-import React, { useState, useRef } from "react";
-import { GoogleMap, LoadScript, Marker, StandaloneSearchBox } from "@react-google-maps/api";
-import { LocationDrawer } from "./LocationDrawer"; // Adjust the path as needed
+import { useState, useRef } from "react";
+import { GoogleMap, Marker, StandaloneSearchBox, useJsApiLoader } from "@react-google-maps/api";
+import { LocationDrawer } from "./LocationDrawer";
 
 interface Position {
   lat: number;
@@ -13,12 +13,17 @@ export const PlaceComponent = () => {
   const [manualPosition, setManualPosition] = useState<Position | null>(null);
   const inputRef = useRef<google.maps.places.SearchBox | null>(null);
   const googleMapsApiKey = import.meta.env.VITE_MAPS_KEY;
-  //console.log(import.meta.env.VITE_MY_SECRET_KEY)
   const [locationPermission, setLocationPermission] = useState(false);
 
-  // Callback to enable geolocation if permission is granted
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey,
+    libraries: ["places"],
+  });
   const enableGeolocation = () => {
     setLocationPermission(true);
+    requestLocation();
+  };
+  const requestLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -47,9 +52,10 @@ export const PlaceComponent = () => {
     }
   };
 
+  if (!isLoaded) return <div>Loading...</div>;
+
   return (
-    <LoadScript googleMapsApiKey={googleMapsApiKey} libraries={["places"]}>
-      {/* Show Drawer if permission has not been granted */}
+    <>
       {!locationPermission && <LocationDrawer onAccept={enableGeolocation} />}
 
       <div className="container mx-auto p-4">
@@ -73,11 +79,11 @@ export const PlaceComponent = () => {
             mapContainerClassName="w-full h-full"
           >
             {(manualPosition || currentPosition) && (
-              <Marker position={manualPosition ?? currentPosition as Position} />
+              <Marker position={manualPosition ?? (currentPosition as Position)} />
             )}
           </GoogleMap>
         </div>
       </div>
-    </LoadScript>
+    </>
   );
 };
