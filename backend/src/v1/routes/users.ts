@@ -160,6 +160,10 @@ UserRouter.post('/sign-in', async (req, res) => {
         res.status(400).json({ error: 'Invalid password' });
         return;
     }
+    if (!user.isVerified || !user.otpExpiresAt || new Date() > user.otpExpiresAt || user?.otp) {
+        res.status(400).json({ error: "Email not verified" });
+        return;
+    }
     const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET as string);
     res.cookie("AUTH_TOKEN", token);
 

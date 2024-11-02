@@ -80,15 +80,19 @@ UserRouter.post('/sign-up', (req, res) => __awaiter(void 0, void 0, void 0, func
             phoneNumber,
             password: hashedPassword,
             otp,
-            otpExpiresAt: new Date(Date.now() + 1 * 60 * 1000),
+            otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000),
         }
     });
-    const temToken = jsonwebtoken_1.default.sign({ email, isVerified: newUser.isVerified }, process.env.JWT_SECRET, { expiresIn: '1m' });
+    const temToken = jsonwebtoken_1.default.sign({ email, isVerified: newUser.isVerified }, process.env.JWT_SECRET, { expiresIn: '5m' });
     res.cookie("AUTH_TOKEN", temToken);
     res.status(200).json({ message: "The verification otp has been sent to mail!" });
 }));
 UserRouter.post('/verify-otp', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { otp } = req.body;
+    if (!otp) {
+        res.status(400).json({ error: 'OTP is required' });
+        return;
+    }
     const tempToken = req.cookies.AUTH_TOKEN;
     if (!tempToken) {
         res.status(401).json({ error: "Unauthorized" });
@@ -105,7 +109,6 @@ UserRouter.post('/verify-otp', (req, res) => __awaiter(void 0, void 0, void 0, f
                 }
             }
         });
-        console.log("CONTROL BEFORE SETTIMEOUT REACHED HERE>>>>>>>>>");
         setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
             const checkUser = yield prisma.user.findFirst({
                 where: {
@@ -121,9 +124,7 @@ UserRouter.post('/verify-otp', (req, res) => __awaiter(void 0, void 0, void 0, f
                 });
                 // res.clearCookie("AUTH_TOKEN");
             }
-            console.log("CHECK USER>>>>>", checkUser);
-        }), 1 * 60 * 1000);
-        console.log("CONTROL AFTER SETTIMEOUT REACHED HERE>>>>>>>>>");
+        }), 5 * 60 * 1000);
         if (!user || !user.otpExpiresAt || new Date() > user.otpExpiresAt || user.otp !== otp) {
             res.status(400).json({ error: "No user found or Invalid otp", user, otp, otpExpiresAt: user === null || user === void 0 ? void 0 : user.otpExpiresAt, isVerified: user === null || user === void 0 ? void 0 : user.isVerified });
             return;
@@ -141,75 +142,9 @@ UserRouter.post('/verify-otp', (req, res) => __awaiter(void 0, void 0, void 0, f
         res.status(200).json({ message: "Email verified successfully" });
     }
     catch (error) {
-        console.error("Error during OTP verification:", error);
         res.status(500).json({ error: "Session expired for otp verification" });
     }
-    if (!otp) {
-        res.status(400).json({ error: 'OTP is required' });
-        return;
-    }
-    // try {
-    //     // Find user with matching OTP
-    //     // const user = await prisma.user.findFirst({
-    //     //     where: {
-    //     //         otp,
-    //     //         isVerified: false, // Ensure we only match unverified users
-    //     //     }
-    //     // });
-    //     // if (!user) {
-    //     //     res.status(400).json({ error: 'Invalid OTP' });
-    //     //     return;
-    //     // }
-    //     // // Check if OTP has expired
-    //     // if (!user.otpExpiresAt || new Date() > user.otpExpiresAt) {
-    //     //     res.status(400).json({ 
-    //     //         error: 'OTP has expired. Please sign up again to receive a new OTP',
-    //     //         requiresNewSignup: true
-    //     //     });
-    //     // //     return;
-    //     // // }
-    //     // setTimeout(async () => {
-    //     //     const checkUser = await prisma.user.findFirst({
-    //     //         where: {
-    //     //             id: user!.id,
-    //     //             isVerified: false
-    //     //         }
-    //     //     });
-    //     //     console.log("CHECK USER>>>>>", checkUser);
-    //     //     // if(!user || !user.isVerified || !user.otpExpiresAt || new Date() > user.otpExpiresAt || checkUser?.otp) {
-    //     //     //     await prisma.user.delete({
-    //     //     //         where: { id: user.id }
-    //     //     //     });
-    //     //     // }
-    //     // }, 3 * 60 * 1000);
-    //     // If OTP is valid and not expired, verify the user
-    //     // const verifiedUser = await prisma.user.update({
-    //     //     where: { id: user.id },
-    //     //     data: {
-    //     //         isVerified: true,
-    //     //         otp: null,
-    //     //         otpExpiresAt: null
-    //     //     }
-    //     // });
-    //     // Generate JWT token
-    //     // const token = jwt.sign(
-    //     //     { 
-    //     //         userId: verifiedUser.id, 
-    //     //         email: verifiedUser.email, 
-    //     //         isVerified: true 
-    //     //     }, 
-    //     //     process.env.JWT_SECRET as string
-    //     // );
-    //     // // Set cookie and send success response
-    //     // res.cookie("AUTH_TOKEN", token);
-    //     res.status(200).json({
-    //         message: 'Email verified successfully',
-    //         isVerified: true
-    //     });
-    // } catch (error) {
-    //     console.error('Error during OTP verification:', error);
-    //     res.status(500).json({ error: 'Internal server error during verification' });
-    // }
+    res.status(500).json({ error: 'Internal server error during verification' });
 }));
 UserRouter.post('/sign-in', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const bodyParser = UserValidator_1.UserLoginValidator.safeParse(req.body);
@@ -228,6 +163,10 @@ UserRouter.post('/sign-in', (req, res) => __awaiter(void 0, void 0, void 0, func
     const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
     if (!isPasswordValid) {
         res.status(400).json({ error: 'Invalid password' });
+        return;
+    }
+    if (!user.isVerified || !user.otpExpiresAt || new Date() > user.otpExpiresAt || (user === null || user === void 0 ? void 0 : user.otp)) {
+        res.status(400).json({ error: "Email not verified" });
         return;
     }
     const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET);
