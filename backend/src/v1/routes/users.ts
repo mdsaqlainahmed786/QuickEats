@@ -24,7 +24,7 @@ UserRouter.post('/sign-up', async (req, res) => {
         res.status(400).json({ error: bodyParser.error });
         return;
     }
-    const { userName, email, password, phoneNumber } = bodyParser.data;
+    const { userName, email, password } = bodyParser.data;
 
 
     const existingUser = await prisma.user.findUnique({
@@ -70,7 +70,6 @@ UserRouter.post('/sign-up', async (req, res) => {
         data: {
             userName,
             email,
-            phoneNumber,
             password: hashedPassword,
             otp,
             otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000),
@@ -80,17 +79,18 @@ UserRouter.post('/sign-up', async (req, res) => {
     res.cookie("AUTH_TOKEN", temToken);
     res.status(200).json({ message: "The verification otp has been sent to mail!" });
 });
+//@ts-ignore
 UserRouter.post('/verify-otp', async (req, res) => {
     const { otp } = req.body;
     if (!otp) {
-        res.status(400).json({ error: 'OTP is required' });
-        return;
+        return res.status(400).json({ error: 'OTP is required' });
     }
+
     const tempToken = req.cookies.AUTH_TOKEN;
     if (!tempToken) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
+        return res.status(401).json({ error: "Unauthorized" });
     }
+
     try {
         const decoded = jwt.verify(tempToken, process.env.JWT_SECRET as string) as jwt.JwtPayload & { email: string };
         const user = await prisma.user.findFirst({
@@ -102,27 +102,37 @@ UserRouter.post('/verify-otp', async (req, res) => {
                 }
             }
         });
+
+        // Set up cleanup timeout
         setTimeout(async () => {
-            const checkUser = await prisma.user.findFirst({
-                where: {
-                    email: decoded.email,
-                    isVerified: false
-                }
-
-            })
-            if (!checkUser) return;
-
-            else if (!checkUser.isVerified || !checkUser.otpExpiresAt || new Date() > checkUser.otpExpiresAt || checkUser?.otp) {
-                await prisma.user.delete({
-                    where: { id: checkUser.id }
+            try {
+                const checkUser = await prisma.user.findFirst({
+                    where: {
+                        email: decoded.email,
+                        isVerified: false
+                    }
                 });
-                // res.clearCookie("AUTH_TOKEN");
+                
+                if (checkUser && (!checkUser.isVerified || !checkUser.otpExpiresAt || new Date() > checkUser.otpExpiresAt || checkUser?.otp)) {
+                    await prisma.user.delete({
+                        where: { id: checkUser.id }
+                    });
+                }
+            } catch (error) {
+                console.error('Error in cleanup timeout:', error);
             }
         }, 5 * 60 * 1000);
+
         if (!user || !user.otpExpiresAt || new Date() > user.otpExpiresAt || user.otp !== otp) {
-            res.status(400).json({ error: "No user found or Invalid otp", user, otp, otpExpiresAt: user?.otpExpiresAt, isVerified: user?.isVerified });
-            return;
+            return res.status(400).json({ 
+                error: "No user found or Invalid otp", 
+                user, 
+                otp, 
+                otpExpiresAt: user?.otpExpiresAt, 
+                isVerified: user?.isVerified 
+            });
         }
+
         const verifiedUser = await prisma.user.update({
             where: { id: user.id },
             data: {
@@ -131,16 +141,19 @@ UserRouter.post('/verify-otp', async (req, res) => {
                 otpExpiresAt: null
             }
         });
-        const token = jwt.sign({ userId: verifiedUser.id, email: verifiedUser.email, isVerified: true }, process.env.JWT_SECRET as string);
+
+        const token = jwt.sign(
+            { userId: verifiedUser.id, email: verifiedUser.email, isVerified: true }, 
+            process.env.JWT_SECRET as string
+        );
+        
         res.cookie("AUTH_TOKEN", token);
-        res.status(200).json({ message: "Email verified successfully" });
+        return res.status(200).json({ message: "Email verified successfully" });
+
     } catch (error) {
-        res.status(500).json({ error: "Session expired for otp verification" });
+        return res.status(500).json({ error: "Session expired for otp verification" });
     }
-
-    res.status(500).json({ error: 'Internal server error during verification' });
 });
-
 UserRouter.post('/sign-in', async (req, res) => {
     const bodyParser = UserLoginValidator.safeParse(req.body);
     if (!bodyParser.success) {

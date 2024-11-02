@@ -12,11 +12,16 @@ const SignUp = () => {
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
  const username = useRecoilValue(usernameState);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword((prev) => !prev);
+  }
   useEffect(() => {
     if (username) {
       navigate("/");
@@ -25,6 +30,10 @@ const SignUp = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      if (password !== confirmPassword) {
+        alert("Passwords do not match");
+        return;
+      }
       const response = await axios.post(
         "http://localhost:3000/api/v1/users/sign-up",
         {
@@ -36,7 +45,7 @@ const SignUp = () => {
       );
       alert("User signed up successfully");
       console.log(response.data);
-      navigate("/");
+      navigate("/verify-otp");
       window.location.reload();
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -105,6 +114,27 @@ const SignUp = () => {
                 className="absolute top-8 right-3 flex items-center cursor-pointer text-red-500"
               >
                 {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+              </div>
+            </div>
+            <div className="relative">
+              <label
+                htmlFor="confirm password"
+                className="block text-sm font-medium text-red-600 mb-1"
+              >
+                Confirm Password
+              </label>
+              <Input
+                type={showConfirmPassword ? "text" : "password"}
+                id="password"
+                placeholder="Enter your password"
+                className="w-full p-2 border border-red-300 rounded focus:outline-none focus:border-red-500"
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <div
+                onClick={toggleConfirmPasswordVisibility}
+                className="absolute top-8 right-3 flex items-center cursor-pointer text-red-500"
+              >
+                {showConfirmPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
               </div>
             </div>
 
