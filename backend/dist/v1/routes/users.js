@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // users.ts
 const express_1 = __importDefault(require("express"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const nodemailer_1 = __importDefault(require("nodemailer"));
 const client_1 = require("@prisma/client");
 const UserValidator_1 = require("../../Validators/UserValidator");
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -23,13 +24,17 @@ const UserRouter = express_1.default.Router();
 const prisma = new client_1.PrismaClient();
 dotenv_1.default.config();
 const SALT_ROUNDS = 10;
+function sendOtp(email, otp) {
+    return __awaiter(this, void 0, void 0, function* () {
+    });
+}
 UserRouter.post('/sign-up', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const bodyParser = UserValidator_1.UserSignUpValidator.safeParse(req.body);
     if (!bodyParser.success) {
         res.status(400).json({ error: bodyParser.error });
         return;
     }
-    const { userName, email, password } = bodyParser.data;
+    const { userName, email, password, phoneNumber } = bodyParser.data;
     const existingUser = yield prisma.user.findUnique({
         where: { email }
     });
@@ -38,19 +43,173 @@ UserRouter.post('/sign-up', (req, res) => __awaiter(void 0, void 0, void 0, func
         return;
     }
     const hashedPassword = yield bcrypt_1.default.hash(password, SALT_ROUNDS);
-    const user = yield prisma.user.create({
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const transporter = nodemailer_1.default.createTransport({
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+            user: process.env.EMAIL_USER, // Your Gmail address
+            pass: process.env.EMAIL_PASS // Your App password
+        }
+    });
+    const mailOptions = {
+        from: {
+            name: 'CartCraze',
+            address: process.env.EMAIL_USER
+        },
+        to: email, // List of receivers
+        subject: 'Verify your email', // Subject line
+        text: `Please verify your email by entering this otp`, // Plain text body
+        html: `<p>Please verify your email by entering the otp: <b>${otp}</b></p>`, // HTML body
+    };
+    const sendMail = (transporter, mailOptions) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            transporter.sendMail(mailOptions);
+        }
+        catch (error) {
+            console.error('Error sending email:', error);
+        }
+    });
+    sendMail(transporter, mailOptions);
+    const newUser = yield prisma.user.create({
         data: {
             userName,
             email,
-            password: hashedPassword
+            phoneNumber,
+            password: hashedPassword,
+            otp,
+            otpExpiresAt: new Date(Date.now() + 1 * 60 * 1000),
         }
     });
-    const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET);
-    res.cookie("AUTH_TOKEN", token);
-    res.status(200).json({
-        message: 'User created successfully',
-        data: user
-    });
+    const temToken = jsonwebtoken_1.default.sign({ email, isVerified: newUser.isVerified }, process.env.JWT_SECRET, { expiresIn: '1m' });
+    res.cookie("AUTH_TOKEN", temToken);
+    res.status(200).json({ message: "The verification otp has been sent to mail!" });
+}));
+UserRouter.post('/verify-otp', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { otp } = req.body;
+    const tempToken = req.cookies.AUTH_TOKEN;
+    if (!tempToken) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+    }
+    try {
+        const decoded = jsonwebtoken_1.default.verify(tempToken, process.env.JWT_SECRET);
+        const user = yield prisma.user.findFirst({
+            where: {
+                email: decoded.email,
+                isVerified: false,
+                otpExpiresAt: {
+                    gte: new Date()
+                }
+            }
+        });
+        console.log("CONTROL BEFORE SETTIMEOUT REACHED HERE>>>>>>>>>");
+        setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
+            const checkUser = yield prisma.user.findFirst({
+                where: {
+                    email: decoded.email,
+                    isVerified: false
+                }
+            });
+            if (!checkUser)
+                return;
+            else if (!checkUser.isVerified || !checkUser.otpExpiresAt || new Date() > checkUser.otpExpiresAt || (checkUser === null || checkUser === void 0 ? void 0 : checkUser.otp)) {
+                yield prisma.user.delete({
+                    where: { id: checkUser.id }
+                });
+                // res.clearCookie("AUTH_TOKEN");
+            }
+            console.log("CHECK USER>>>>>", checkUser);
+        }), 1 * 60 * 1000);
+        console.log("CONTROL AFTER SETTIMEOUT REACHED HERE>>>>>>>>>");
+        if (!user || !user.otpExpiresAt || new Date() > user.otpExpiresAt || user.otp !== otp) {
+            res.status(400).json({ error: "No user found or Invalid otp", user, otp, otpExpiresAt: user === null || user === void 0 ? void 0 : user.otpExpiresAt, isVerified: user === null || user === void 0 ? void 0 : user.isVerified });
+            return;
+        }
+        const verifiedUser = yield prisma.user.update({
+            where: { id: user.id },
+            data: {
+                isVerified: true,
+                otp: null,
+                otpExpiresAt: null
+            }
+        });
+        const token = jsonwebtoken_1.default.sign({ userId: verifiedUser.id, email: verifiedUser.email, isVerified: true }, process.env.JWT_SECRET);
+        res.cookie("AUTH_TOKEN", token);
+        res.status(200).json({ message: "Email verified successfully" });
+    }
+    catch (error) {
+        console.error("Error during OTP verification:", error);
+        res.status(500).json({ error: "Session expired for otp verification" });
+    }
+    if (!otp) {
+        res.status(400).json({ error: 'OTP is required' });
+        return;
+    }
+    // try {
+    //     // Find user with matching OTP
+    //     // const user = await prisma.user.findFirst({
+    //     //     where: {
+    //     //         otp,
+    //     //         isVerified: false, // Ensure we only match unverified users
+    //     //     }
+    //     // });
+    //     // if (!user) {
+    //     //     res.status(400).json({ error: 'Invalid OTP' });
+    //     //     return;
+    //     // }
+    //     // // Check if OTP has expired
+    //     // if (!user.otpExpiresAt || new Date() > user.otpExpiresAt) {
+    //     //     res.status(400).json({ 
+    //     //         error: 'OTP has expired. Please sign up again to receive a new OTP',
+    //     //         requiresNewSignup: true
+    //     //     });
+    //     // //     return;
+    //     // // }
+    //     // setTimeout(async () => {
+    //     //     const checkUser = await prisma.user.findFirst({
+    //     //         where: {
+    //     //             id: user!.id,
+    //     //             isVerified: false
+    //     //         }
+    //     //     });
+    //     //     console.log("CHECK USER>>>>>", checkUser);
+    //     //     // if(!user || !user.isVerified || !user.otpExpiresAt || new Date() > user.otpExpiresAt || checkUser?.otp) {
+    //     //     //     await prisma.user.delete({
+    //     //     //         where: { id: user.id }
+    //     //     //     });
+    //     //     // }
+    //     // }, 3 * 60 * 1000);
+    //     // If OTP is valid and not expired, verify the user
+    //     // const verifiedUser = await prisma.user.update({
+    //     //     where: { id: user.id },
+    //     //     data: {
+    //     //         isVerified: true,
+    //     //         otp: null,
+    //     //         otpExpiresAt: null
+    //     //     }
+    //     // });
+    //     // Generate JWT token
+    //     // const token = jwt.sign(
+    //     //     { 
+    //     //         userId: verifiedUser.id, 
+    //     //         email: verifiedUser.email, 
+    //     //         isVerified: true 
+    //     //     }, 
+    //     //     process.env.JWT_SECRET as string
+    //     // );
+    //     // // Set cookie and send success response
+    //     // res.cookie("AUTH_TOKEN", token);
+    //     res.status(200).json({
+    //         message: 'Email verified successfully',
+    //         isVerified: true
+    //     });
+    // } catch (error) {
+    //     console.error('Error during OTP verification:', error);
+    //     res.status(500).json({ error: 'Internal server error during verification' });
+    // }
 }));
 UserRouter.post('/sign-in', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const bodyParser = UserValidator_1.UserLoginValidator.safeParse(req.body);

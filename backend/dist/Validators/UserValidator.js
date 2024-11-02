@@ -6,9 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserLoginValidator = exports.UserSignUpValidator = void 0;
 const zod_1 = __importDefault(require("zod"));
 exports.UserSignUpValidator = zod_1.default.object({
-    userName: zod_1.default.string().min(3),
+    userName: zod_1.default.string().min(3).max(10),
     email: zod_1.default.string().email(),
     password: zod_1.default.string().min(8),
+    phoneNumber: zod_1.default.string().min(10).max(13),
 });
 exports.UserLoginValidator = zod_1.default.object({
     email: zod_1.default.string().email(),
