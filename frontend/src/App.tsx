@@ -7,6 +7,7 @@ import LandingPage from "./pages/LandingPage";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import MapsPage from "./pages/MapsPage";
+import VerifyOtp from "./pages/VerifyOtp";
 function App() {
   return (
     <>
@@ -18,6 +19,7 @@ function App() {
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/maps" element={<MapsPage />} />
+          <Route path="/verify-otp" element={<VerifyOtp/>} />
         </Routes>
       </BrowserRouter>
       {/* <LocationDrawer /> */}
