@@ -103,7 +103,6 @@ UserRouter.post('/verify-otp', async (req, res) => {
             }
         });
 
-        // Set up cleanup timeout
         setTimeout(async () => {
             try {
                 const checkUser = await prisma.user.findFirst({
@@ -173,7 +172,7 @@ UserRouter.post('/sign-in', async (req, res) => {
         res.status(400).json({ error: 'Invalid password' });
         return;
     }
-    if (!user.isVerified || !user.otpExpiresAt || new Date() > user.otpExpiresAt || user?.otp) {
+    if (!user.isVerified || user?.otp) {
         res.status(400).json({ error: "Email not verified" });
         return;
     }
