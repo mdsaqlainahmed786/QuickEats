@@ -84,7 +84,7 @@ UserRouter.post('/sign-up', (req, res) => __awaiter(void 0, void 0, void 0, func
     });
     const temToken = jsonwebtoken_1.default.sign({ email, isVerified: newUser.isVerified }, process.env.JWT_SECRET, { expiresIn: '5m' });
     res.cookie("AUTH_TOKEN", temToken);
-    res.status(200).json({ message: "The verification otp has been sent to mail!" });
+    res.status(200).json({ message: "The verification otp has been sent to mail!", otp });
 }));
 //@ts-ignore
 UserRouter.post('/verify-otp', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -107,24 +107,6 @@ UserRouter.post('/verify-otp', (req, res) => __awaiter(void 0, void 0, void 0, f
                 }
             }
         });
-        setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
-            try {
-                const checkUser = yield prisma.user.findFirst({
-                    where: {
-                        email: decoded.email,
-                        isVerified: false
-                    }
-                });
-                if (checkUser && (!checkUser.isVerified || !checkUser.otpExpiresAt || new Date() > checkUser.otpExpiresAt || (checkUser === null || checkUser === void 0 ? void 0 : checkUser.otp))) {
-                    yield prisma.user.delete({
-                        where: { id: checkUser.id }
-                    });
-                }
-            }
-            catch (error) {
-                console.error('Error in cleanup timeout:', error);
-            }
-        }), 5 * 60 * 1000);
         if (!user || !user.otpExpiresAt || new Date() > user.otpExpiresAt || user.otp !== otp) {
             return res.status(400).json({
                 error: "No user found or Invalid otp",
@@ -142,9 +124,19 @@ UserRouter.post('/verify-otp', (req, res) => __awaiter(void 0, void 0, void 0, f
                 otpExpiresAt: null
             }
         });
+        const userDetails = yield prisma.user.findUnique({
+            where: {
+                email: decoded.email,
+                isVerified: true,
+                otp: null,
+                otpExpiresAt: null
+            },
+        });
+        //console.log("User verified successfully", userDetails);
         const token = jsonwebtoken_1.default.sign({ userId: verifiedUser.id, email: verifiedUser.email, isVerified: true }, process.env.JWT_SECRET);
         res.cookie("AUTH_TOKEN", token);
-        return res.status(200).json({ message: "Email verified successfully" });
+        // console.log("User verified successfully", userDetails?.userName);
+        return res.status(200).json({ message: "Email verified successfully", userName: userDetails === null || userDetails === void 0 ? void 0 : userDetails.userName });
     }
     catch (error) {
         return res.status(500).json({ error: "Session expired for otp verification" });
@@ -206,4 +198,44 @@ UserRouter.get("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(401).json({ error: "Unauthorized" });
     }
 }));
+UserRouter.get('/unauthorized', (req, res) => {
+    try {
+        const authToken = req.cookies.AUTH_TOKEN;
+        if (!authToken) {
+            res.status(401).json({ error: 'Unauthorized to enter otp' });
+            return;
+        }
+        const token = jsonwebtoken_1.default.verify(authToken, process.env.JWT_SECRET);
+        if (token.isVerified) {
+            res.status(400).json({ message: 'Already verified' });
+            return;
+        }
+        res.status(200).json({ message: 'Enter otp' });
+    }
+    catch (error) {
+        console.error('Error in unauthorized:', error);
+        res.status(401).json({ error: 'Session expired' });
+        const token = req.cookies.AUTH_TOKEN;
+        function seeUser() {
+            return __awaiter(this, void 0, void 0, function* () {
+                try {
+                    const checkUser = yield prisma.user.findFirst({
+                        where: {
+                            email: token.email,
+                            isVerified: false
+                        }
+                    });
+                    yield prisma.user.delete({
+                        where: { id: checkUser.id }
+                    });
+                }
+                catch (error) {
+                    console.error('Session Expired, Jwt is dead');
+                }
+            });
+        }
+        ;
+        seeUser();
+    }
+});
 exports.default = UserRouter;

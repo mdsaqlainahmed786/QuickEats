@@ -4,21 +4,21 @@ import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { usernameState } from "@/RecoilStates/UserDetails";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 import axios from "axios";
 
 const Header = () => {
   const { user, isLoading } = useGetUser();
   const navigate = useNavigate();
-  const setUsername = useSetRecoilState(usernameState);
+  const [username, setUsername] = useRecoilState(usernameState);
 
   const onLogout = async () => {
     try {
       await axios.get("http://localhost:3000/api/v1/users/logout", {
         withCredentials: true,
       });
-      setUsername(null);
-      navigate("/sign-in");
+      setUsername(null); // Updates the Recoil state
+      navigate("/sign-in"); // Redirects immediately after logout
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -27,9 +27,9 @@ const Header = () => {
   useEffect(() => {
     if (!isLoading) {
       if (user) {
-        setUsername(user.userName);
+        setUsername(user.userName); // Set username in Recoil state if user exists
       } else {
-        setUsername(null);
+        setUsername(null); // Clear username if no user is logged in
       }
     }
   }, [user, isLoading, setUsername]);
@@ -45,9 +45,9 @@ const Header = () => {
         <div className="flex gap-2 items-center text-red-500">
           {isLoading ? (
             <span>Loading...</span>
-          ) : user ? (
+          ) : username ? (
             <>
-              <span>Welcome, {user.userName}</span>
+              <span>Welcome, {username}</span>
               <Button
                 onClick={onLogout}
                 className="cursor-pointer bg-red-500 hover:bg-red-600"
