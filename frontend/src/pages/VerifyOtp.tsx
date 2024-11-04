@@ -18,6 +18,9 @@ const VerifyOtp = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (username) {
+      navigate("/maps");
+    }
   
   }, [username, navigate]);
 
@@ -54,7 +57,7 @@ const VerifyOtp = () => {
     };
 
     fetchingUnAuthUser();
-  }, [navigate]);
+  }, [navigate, username]);
 
   const handleSubmit = async () => {
     if (!otp) {
