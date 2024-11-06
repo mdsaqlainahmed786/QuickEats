@@ -15,7 +15,7 @@ dishRouter.post('/add-dish', async (req, res) => {
     }
     const { title, price, description, category, image } = bodyParser.data;
     try {
-        const dish = await prisma.dish.create({
+        await prisma.dish.create({
             data: {
                 title,
                 price,
@@ -24,7 +24,6 @@ dishRouter.post('/add-dish', async (req, res) => {
                 image
             }
         });
-        console.log("Dish created>>>",dish);
 
     } catch (error) {
         res.status(400).json({ error });
