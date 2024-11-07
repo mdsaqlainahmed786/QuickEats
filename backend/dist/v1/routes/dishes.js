@@ -49,21 +49,20 @@ exports.dishRouter.get('/category/all', (req, res) => __awaiter(void 0, void 0, 
     const dishes = yield prisma.dish.findMany();
     res.status(200).json(dishes);
 }));
-exports.dishRouter.get('/category/:category', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { category } = req.params;
-    try {
-        const categoryDishes = yield prisma.dish.findMany({
-            where: {
-                category
-            },
-        });
-        res.status(200).json({ categoryDishes });
-    }
-    catch (error) {
-        res.status(400).json({ error });
-        return;
-    }
-}));
+// dishRouter.get('/category/:category', async (req, res) => {
+//     const { category } = req.params;
+//     try {
+//         const categoryDishes = await prisma.dish.findMany({
+//             where: {
+//                 category
+//             },
+//         })
+//         res.status(200).json({ categoryDishes })
+//     } catch (error) {
+//         res.status(400).json({ error });
+//         return;
+//     }
+// })
 exports.dishRouter.get('/dish/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {

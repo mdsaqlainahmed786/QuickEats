@@ -50,10 +50,9 @@ const Dishes = () => {
         ))}
       </div>
 
-      {/* Dishes grid */}
       <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {filteredDishes.map(dish => (
-          <div key={dish.id} className="bg-white shadow-md rounded-lg cursor-pointer p-4 text-center hover:shadow-xl">
+          <div key={dish.id} className="bg-white shadow-md rounded-lg cursor-pointer p-4 text-center hover:shadow-xl hover:border hover:border-red-500">
             <div className="h-60 w-60 mx-auto mb-4 rounded-full overflow-hidden">
               <img
                 src={dish.image}

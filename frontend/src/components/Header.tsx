@@ -4,6 +4,13 @@ import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { usernameState } from "@/RecoilStates/UserDetails";
+import { FaRegCircleUser } from "react-icons/fa6";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { IoCartOutline } from "react-icons/io5";
 import { useRecoilState } from "recoil";
 import axios from "axios";
 
@@ -27,9 +34,9 @@ const Header = () => {
   useEffect(() => {
     if (!isLoading) {
       if (user) {
-        setUsername(user.userName); // Set username in Recoil state if user exists
+        setUsername(user.userName);
       } else {
-        setUsername(null); // Clear username if no user is logged in
+        setUsername(null);
       }
     }
   }, [user, isLoading, setUsername]);
@@ -47,13 +54,21 @@ const Header = () => {
             <span>Loading...</span>
           ) : username ? (
             <>
-              <span>Welcome, {username}</span>
-              <Button
-                onClick={onLogout}
-                className="cursor-pointer bg-red-500 hover:bg-red-600"
-              >
-                SignOut
-              </Button>
+              <HoverCard>
+                <HoverCardTrigger className="cursor-pointer text-4xl">
+                  <FaRegCircleUser />
+                </HoverCardTrigger>
+                <HoverCardContent className="flex flex-col space-y-4">
+                  <span>Welcome, {username}</span>
+                  <Button
+                    onClick={onLogout}
+                    className="cursor-pointer bg-red-500 hover:bg-red-600"
+                  >
+                    SignOut
+                  </Button>
+                </HoverCardContent>
+              </HoverCard>
+              <IoCartOutline className="text-4xl" />
             </>
           ) : (
             <>
