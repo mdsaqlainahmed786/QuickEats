@@ -42,16 +42,20 @@ export const PlaceComponent = () => {
 
   const handlePlaceChanged = () => {
     if (inputRef.current) {
-      const [place] = inputRef.current.getPlaces();
-      if (place && place.geometry) {
-        setManualPosition({
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-        });
+      const places = inputRef.current.getPlaces();
+      if (!places || places.length === 0 || !places[0].geometry) {
+        alert("No such place exists. Please enter a valid location.");
+        return;
       }
+      const place = places[0];
+      setManualPosition({
+        lat: place!.geometry!.location!.lat(),
+        lng: place!.geometry!.location!.lng(),
+      });
+      console.log("Manual position:", manualPosition);
     }
   };
-
+  
   if (!isLoaded) return <div>Loading...</div>;
 
   return (

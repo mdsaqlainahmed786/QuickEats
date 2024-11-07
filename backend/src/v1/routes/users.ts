@@ -77,7 +77,7 @@ UserRouter.post('/sign-up', async (req, res) => {
     })
     const temToken = jwt.sign({ email, isVerified: newUser.isVerified }, process.env.JWT_SECRET as string, { expiresIn: '5m' });
     res.cookie("AUTH_TOKEN", temToken);
-    res.status(200).json({ message: "The verification otp has been sent to mail!" , otp});
+    res.status(200).json({ message: "The verification otp has been sent to mail!", otp });
 });
 //@ts-ignore
 UserRouter.post('/verify-otp', async (req, res) => {
@@ -121,7 +121,7 @@ UserRouter.post('/verify-otp', async (req, res) => {
                 otpExpiresAt: null
             }
         });
-          const userDetails = await prisma.user.findUnique({
+        const userDetails = await prisma.user.findUnique({
             where: {
                 email: decoded.email,
                 isVerified: true,
@@ -136,7 +136,7 @@ UserRouter.post('/verify-otp', async (req, res) => {
         );
 
         res.cookie("AUTH_TOKEN", token);
-       // console.log("User verified successfully", userDetails?.userName);
+        // console.log("User verified successfully", userDetails?.userName);
         return res.status(200).json({ message: "Email verified successfully", userName: userDetails?.userName });
 
     } catch (error) {
@@ -234,9 +234,31 @@ UserRouter.get('/unauthorized', (req, res) => {
                 console.error('Session Expired, Jwt is dead');
             }
         };
-        
+
         seeUser();
     }
+})
+
+UserRouter.put('/update-address', async (req, res) => {
+    const token = req.cookies.AUTH_TOKEN;
+    if (!token) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload
+    const user = await prisma.user.findUnique({
+        where: { email: decoded.email }
+    });
+    if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+    }
+    if (!user.isVerified) {
+        res.status(400).json({ error: 'Email not verified' });
+        return;
+    }
+  const { address } = req.body;
+  
 })
 
 export default UserRouter;
