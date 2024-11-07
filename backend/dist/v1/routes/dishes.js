@@ -45,7 +45,7 @@ exports.dishRouter.post('/add-dish', (req, res) => __awaiter(void 0, void 0, voi
     }
     res.status(200).json({ message: 'Dish added successfully' });
 }));
-exports.dishRouter.get('/get-all-dishes', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.dishRouter.get('/category/all', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const dishes = yield prisma.dish.findMany();
     res.status(200).json(dishes);
 }));

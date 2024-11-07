@@ -238,4 +238,24 @@ UserRouter.get('/unauthorized', (req, res) => {
         seeUser();
     }
 });
+UserRouter.put('/update-address', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const token = req.cookies.AUTH_TOKEN;
+    if (!token) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+    }
+    const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+    const user = yield prisma.user.findUnique({
+        where: { email: decoded.email }
+    });
+    if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+    }
+    if (!user.isVerified) {
+        res.status(400).json({ error: 'Email not verified' });
+        return;
+    }
+    const { address } = req.body;
+}));
 exports.default = UserRouter;
