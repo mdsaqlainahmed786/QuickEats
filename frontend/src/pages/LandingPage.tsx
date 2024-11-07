@@ -24,7 +24,7 @@ const LandingPage = () => {
             <img
               src="https://www.samaheats.com/wp-content/uploads/2024/03/Untitled-design-15-1152x1536.png"
               alt="Pizza"
-              className="rounded-full h-[12.75rem] w-[214px] shadow-lg mx-auto"
+              className="rounded-full h-[12.75rem] object-cover w-[214px] shadow-lg mx-auto"
             />
             <h3 className="text-xl font-bold mt-4 text-red-600">Butter Chicken</h3>
             <p className="mt-2 text-gray-700">Buttery, Juicy flavorful gravy chicken</p>
@@ -33,7 +33,7 @@ const LandingPage = () => {
             <img
               src="https://cdn.zeptonow.com/production///tr:w-1000,ar-100-100,pr-true,f-auto,q-80/web/recipes/gulab-jamun.png"
               alt="Burger"
-              className="rounded-full h-[12.75rem] w-[214px] shadow-lg mx-auto"
+              className="rounded-full h-[12.75rem] object-cover w-[214px] shadow-lg mx-auto"
             />
             <h3 className="text-xl font-bold mt-4 text-red-600">Gulab Jamun</h3>
             <p className="mt-2 text-gray-700">Delicious sweet dish, with juicy sweet syrup</p>
@@ -42,7 +42,7 @@ const LandingPage = () => {
             <img
               src="https://ministryofcurry.com/wp-content/uploads/2024/06/chicken-biryani.jpg"
               alt="Pasta"
-              className="rounded-full h-[12.75rem] w-[214px] shadow-lg mx-auto"
+              className="rounded-full h-[12.75rem] object-cover w-[214px] shadow-lg mx-auto"
             />
             <h3 className="text-xl font-bold mt-4 text-red-600">Chicken Biryani</h3>
             <p className="mt-2 text-gray-700">Rich in spices, Flavorful meat.</p>
