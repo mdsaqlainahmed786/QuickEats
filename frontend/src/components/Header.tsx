@@ -39,7 +39,7 @@ const Header = () => {
       <div className="flex w-full max-w-[90vw] justify-between items-center">
         <Link to="/">
           <div className="cursor-pointer">
-            <span className="text-3xl font-bold text-red-500">Deliver</span>
+            <span className="text-3xl font-bold text-red-500">QuickEats</span>
           </div>
         </Link>
         <div className="flex gap-2 items-center text-red-500">

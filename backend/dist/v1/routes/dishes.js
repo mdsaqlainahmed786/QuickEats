@@ -29,7 +29,7 @@ exports.dishRouter.post('/add-dish', (req, res) => __awaiter(void 0, void 0, voi
     }
     const { title, price, description, category, image } = bodyParser.data;
     try {
-        const dish = yield prisma.dish.create({
+        yield prisma.dish.create({
             data: {
                 title,
                 price,
@@ -38,7 +38,6 @@ exports.dishRouter.post('/add-dish', (req, res) => __awaiter(void 0, void 0, voi
                 image
             }
         });
-        console.log("Dish created>>>", dish);
     }
     catch (error) {
         res.status(400).json({ error });
@@ -49,4 +48,34 @@ exports.dishRouter.post('/add-dish', (req, res) => __awaiter(void 0, void 0, voi
 exports.dishRouter.get('/get-all-dishes', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const dishes = yield prisma.dish.findMany();
     res.status(200).json(dishes);
+}));
+exports.dishRouter.get('/category/:category', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { category } = req.params;
+    try {
+        const categoryDishes = yield prisma.dish.findMany({
+            where: {
+                category
+            },
+        });
+        res.status(200).json({ categoryDishes });
+    }
+    catch (error) {
+        res.status(400).json({ error });
+        return;
+    }
+}));
+exports.dishRouter.get('/dish/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        const dishes = yield prisma.dish.findUnique({
+            where: {
+                id
+            }
+        });
+        res.status(200).json(dishes);
+    }
+    catch (error) {
+        res.status(400).json({ error });
+        return;
+    }
 }));

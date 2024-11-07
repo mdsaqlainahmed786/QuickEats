@@ -29,10 +29,42 @@ dishRouter.post('/add-dish', async (req, res) => {
         res.status(400).json({ error });
         return;
     }
-      res.status(200).json({ message: 'Dish added successfully' });
+    res.status(200).json({ message: 'Dish added successfully' });
 });
 
 dishRouter.get('/get-all-dishes', async (req, res) => {
     const dishes = await prisma.dish.findMany();
     res.status(200).json(dishes);
 });
+
+dishRouter.get('/category/:category', async (req, res) => {
+    const { category } = req.params;
+    try {
+        const categoryDishes = await prisma.dish.findMany({
+            where: {
+                category
+            },
+        })
+        res.status(200).json({ categoryDishes })
+    } catch (error) {
+        res.status(400).json({ error });
+        return;
+
+    }
+})
+
+dishRouter.get('/dish/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const dishes = await prisma.dish.findUnique({
+            where: {
+                id
+            }
+        });
+        res.status(200).json(dishes);
+    } catch (error) {
+        res.status(400).json({ error });
+        return;
+    }
+});
+
