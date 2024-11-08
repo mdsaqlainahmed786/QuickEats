@@ -28,8 +28,12 @@ const Dishes = () => {
     };
     fetchDishes();
   }, []);
-
-  // Filter dishes based on selected category
+  const handleAddToCart = (dish: Dish) => {
+    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
+    existingCart.push(dish);
+    localStorage.setItem("cart", JSON.stringify(existingCart));
+    alert("Dish added to cart successfully!");
+  };
   const filteredDishes =
     selectedCategory === "all"
       ? dishes
@@ -76,7 +80,12 @@ const Dishes = () => {
             <p className="text-gray-600 capitalize">{dish.category}</p>
             <p className="text-gray-400">{dish.description.slice(0, 100)}...</p>
             <div className="absolute bottom-0 left-0 right-0 mb-5">
-              <Button className="w-[85%] bg-red-500 transition duration-300 hover:bg-red-600">Add to Cart</Button>
+              <Button
+                onClick={() => handleAddToCart(dish)}
+                className="w-[85%] bg-red-500 transition duration-300 hover:bg-red-600"
+              >
+                Add to Cart
+              </Button>
             </div>
           </div>
         ))}

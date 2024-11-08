@@ -257,5 +257,14 @@ UserRouter.put('/update-address', (req, res) => __awaiter(void 0, void 0, void 0
         return;
     }
     const { address } = req.body;
+    if (!address) {
+        res.status(400).json({ error: 'Address is required' });
+        return;
+    }
+    const updatedUser = yield prisma.user.update({
+        where: { id: user.id },
+        data: { address }
+    });
+    res.status(200).json({ message: 'Address updated successfully' });
 }));
 exports.default = UserRouter;
