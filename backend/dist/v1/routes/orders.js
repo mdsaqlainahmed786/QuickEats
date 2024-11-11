@@ -27,8 +27,9 @@ ordersRouter.post('/add', (req, res) => __awaiter(void 0, void 0, void 0, functi
         return;
     }
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
-    const { cartItems, total } = req.body;
+    const { cartItems } = req.body;
     try {
+        const total = cartItems.reduce((acc, item) => acc + item.price, 0);
         const order = yield prisma.order.create({
             data: {
                 total,
@@ -46,6 +47,26 @@ ordersRouter.post('/add', (req, res) => __awaiter(void 0, void 0, void 0, functi
             include: { orderItem: true },
         });
         res.json({ message: "Order added successfully", order, total, cartItems });
+    }
+    catch (error) {
+        console.log(error);
+    }
+}));
+ordersRouter.get('/all', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
+    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId;
+    try {
+        const orders = yield prisma.order.findMany({
+            where: {
+                userId
+            },
+            include: {
+                orderItem: true
+            }
+        });
+        res.json({
+            orders: orders
+        });
     }
     catch (error) {
         console.log(error);

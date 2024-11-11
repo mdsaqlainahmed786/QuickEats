@@ -29,8 +29,9 @@ ordersRouter.post('/add', async (req: AuthenticatedRequest & { body: { cartItems
     }
 
     const userId = req.user?.userId;
-    const { cartItems, total } = req.body
+    const { cartItems } = req.body
     try {
+        const total = cartItems.reduce((acc:any, item:OrderItem) => acc + item.price, 0);
         const order = await prisma.order.create({
             data: {
                 total,
@@ -49,6 +50,25 @@ ordersRouter.post('/add', async (req: AuthenticatedRequest & { body: { cartItems
             include: { orderItem: true },
         })
         res.json({ message: "Order added successfully", order, total, cartItems })
+    } catch (error) {
+        console.log(error);
+    }
+})
+
+ordersRouter.get('/all', async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.userId;
+    try {
+        const orders = await prisma.order.findMany({
+            where: {
+                userId
+            },
+            include: {
+                orderItem: true
+            }
+        });
+        res.json({
+            orders:orders
+        });
     } catch (error) {
         console.log(error);
     }
