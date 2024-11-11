@@ -165,7 +165,7 @@ UserRouter.post('/sign-in', (req, res) => __awaiter(void 0, void 0, void 0, func
         res.status(400).json({ error: "Email not verified" });
         return;
     }
-    const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET);
+    const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email, isVerified: user.isVerified }, process.env.JWT_SECRET);
     res.cookie("AUTH_TOKEN", token);
     res.status(200).json({
         message: 'User logged in successfully',

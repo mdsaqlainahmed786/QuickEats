@@ -166,7 +166,7 @@ UserRouter.post('/sign-in', async (req, res) => {
         res.status(400).json({ error: "Email not verified" });
         return;
     }
-    const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET as string);
+    const token = jwt.sign({ userId: user.id, email: user.email, isVerified: user.isVerified }, process.env.JWT_SECRET as string);
     res.cookie("AUTH_TOKEN", token);
 
     res.status(200).json({
