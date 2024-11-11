@@ -68,7 +68,10 @@ const Header = () => {
                   </Button>
                 </HoverCardContent>
               </HoverCard>
-              <IoCartOutline className="text-4xl" />
+              <IoCartOutline
+                onClick={() => navigate("/cart")}
+                className="text-4xl cursor-pointer"
+              />
             </>
           ) : (
             <>
@@ -78,6 +81,10 @@ const Header = () => {
               <Link to="/sign-in">
                 <span className="cursor-pointer">SignIn</span>
               </Link>
+              <IoCartOutline
+                onClick={() => navigate("/cart")}
+                className="text-4xl cursor-pointer"
+              />
             </>
           )}
         </div>

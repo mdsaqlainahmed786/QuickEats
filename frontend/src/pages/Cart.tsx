@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 interface CartItem {
-    id: number;
-    title: string;
-    category: string;
-    price: number;
-    image: string;
-    }
+  id: number;
+  title: string;
+  category: string;
+  price: number;
+  image: string;
+}
 const Cart = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [total, setTotal] = useState<number>(0);
+  const navigate = useNavigate();
   useEffect(() => {
     const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
     setCart(existingCart);
@@ -23,7 +25,7 @@ const Cart = () => {
     const updatedCart = cart.filter((item) => item.id !== id);
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
-  }
+  };
   return (
     <div className="min-h-screen bg-white text-gray-800 p-4 md:p-6">
       <h1 className="text-2xl md:text-3xl font-bold text-red-600 mb-4">
@@ -33,7 +35,10 @@ const Cart = () => {
       <div className="border-t border-red-300 mt-4">
         {/* Example Cart Item */}
         {cart.map((cartItem) => (
-          <div key={cartItem.id} className="flex flex-col md:flex-row justify-between items-center py-4 border-b border-red-300 space-y-4 md:space-y-0">
+          <div
+            key={cartItem.id}
+            className="flex flex-col md:flex-row justify-between items-center py-4 border-b border-red-300 space-y-4 md:space-y-0"
+          >
             <div className="flex items-center space-x-4 w-full md:w-auto">
               <img
                 src={cartItem.image}
@@ -50,7 +55,10 @@ const Cart = () => {
             <div className="text-lg font-bold text-gray-800 md:mr-6">
               ₹{cartItem.price}
             </div>
-            <button onClick={()=>onRemoveCartItem(cartItem.id)} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full md:w-auto">
+            <button
+              onClick={() => onRemoveCartItem(cartItem.id)}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full md:w-auto"
+            >
               Remove
             </button>
           </div>
@@ -62,7 +70,10 @@ const Cart = () => {
           <span className="text-red-600">₹{total}</span>
         </div>
 
-        <button className="w-full bg-red-500 text-white py-3 mt-6 rounded hover:bg-red-600 font-semibold">
+        <button
+          onClick={() => navigate("/add-address")}
+          className="w-full bg-red-500 text-white py-3 mt-6 rounded hover:bg-red-600 font-semibold"
+        >
           Proceed to Checkout
         </button>
       </div>

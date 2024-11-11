@@ -2,6 +2,7 @@ import Header from "./components/Header";
 import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
+import Orders from "./pages/Orders";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import MapsPage from "./pages/MapsPage";
@@ -20,6 +21,7 @@ function App() {
           <Route path="/dishes" element={<Dishes />} />
           <Route path="/add-address" element={<MapsPage />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/orders" element={<Orders/>} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
         </Routes>
       </BrowserRouter>

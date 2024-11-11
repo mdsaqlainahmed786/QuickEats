@@ -168,7 +168,7 @@ export const PlaceComponent = () => {
           onClick={confirmAddress}
           className="bg-red-500"
         >
-          Confirm Address
+          Confirm Address and Proceed
         </Button>
       </div>
     </>
