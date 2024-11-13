@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
 interface CartItem {
   id: number;
   title: string;
@@ -9,7 +11,9 @@ interface CartItem {
 }
 const Cart = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [total, setTotal] = useState<number>(0);
+
+  const [total, setTotal] = useState<number>(99);
+
   const navigate = useNavigate();
   useEffect(() => {
     const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -71,11 +75,29 @@ const Cart = () => {
         </div>
 
         <button
-          onClick={() => navigate("/add-address")}
-          className="w-full bg-red-500 text-white py-3 mt-6 rounded hover:bg-red-600 font-semibold"
-        >
-          Proceed to Checkout
-        </button>
+  onClick={async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/v1/payments/pay",
+        { total },
+        { withCredentials: true }
+      );
+
+      const paymentLink = response.data.link;
+      if (paymentLink) {
+        // Redirect the user to the PayPal approval URL
+        window.location.href = paymentLink;
+      } else {
+        console.error("Payment link not received from server.");
+      }
+    } catch (error) {
+      console.error("Error initiating payment:", error);
+    }
+  }}
+  className="w-full bg-red-500 text-white py-3 mt-6 rounded hover:bg-red-600 font-semibold"
+>
+  Proceed to Checkout {total}
+</button>
       </div>
     </div>
   );

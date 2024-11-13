@@ -9,6 +9,7 @@ import MapsPage from "./pages/MapsPage";
 import VerifyOtp from "./pages/VerifyOtp";
 import Dishes from "./pages/Dishes";
 import Cart from "./pages/Cart";
+import SuccessPage from "./pages/Sucess";
 function App() {
   return (
     <>
@@ -19,6 +20,7 @@ function App() {
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/dishes" element={<Dishes />} />
+          <Route path='/success' element={<SuccessPage />} />
           <Route path="/add-address" element={<MapsPage />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/orders" element={<Orders/>} />

@@ -4,6 +4,7 @@ import UserRouter from './users';
 import cookieParser from "cookie-parser"
 import ordersRouter from './orders';
 import orderMiddleWare from "../../middleware/orderMiddleWare"
+ import paymentRouter from './payments';
 import { dishRouter } from './dishes';
 const app = express();
 
@@ -20,6 +21,7 @@ const PORT = 3000;
 app.use('/api/v1/users', UserRouter);
 app.use('/api/v1/dishes', dishRouter);
 app.use('/api/v1/orders', orderMiddleWare, ordersRouter);
+ app.use('/api/v1/payments', paymentRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
