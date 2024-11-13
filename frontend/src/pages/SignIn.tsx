@@ -1,21 +1,35 @@
+
+
 import { useState, useEffect } from "react";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
-import { FiEye, FiEyeOff } from "react-icons/fi";
-import { Link, useNavigate } from "react-router-dom";
-import { useRecoilValue } from "recoil";
-import { usernameState } from "../RecoilStates/UserDetails";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import axios from "axios";
-const SignIn = () => {
+import { Eye, EyeOff } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { usernameState } from "@/RecoilStates/UserDetails";
+
+export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
   const username = useRecoilValue(usernameState);
+  const setUsername = useSetRecoilState(usernameState);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
-  };
   useEffect(() => {
     if (username) {
       navigate("/");
@@ -24,95 +38,97 @@ const SignIn = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await axios.post(
         "http://localhost:3000/api/v1/users/sign-in",
-        {
-          email,
-          password,
-        },
+        { email, password },
         { withCredentials: true }
       );
-      alert("User signed in successfully");
-      console.log(response.data);
+      setUsername(response.data.userName);
+      toast({
+        title: "Sign in successful",
+        description: "Welcome back to QuickEats!",
+      });
       navigate("/");
       window.location.reload();
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        console.log(error.response.data);
-      } else {
-        console.log(error);
-      }
+      console.error("Sign in failed:", error);
+      toast({
+        title: "Sign in failed",
+        description: "Please check your email and password and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <>
-      <div className="flex justify-center items-center min-h-screen bg-white">
-        <div className="w-full max-w-md p-8 bg-red-50 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-center text-red-500 mb-6">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-orange-100 flex flex-col justify-center items-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center text-orange-600">
             Sign In
-          </h2>
-
-          <form className="space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-red-600 mb-1"
-              >
-                Email
-              </label>
+          </CardTitle>
+          <CardDescription className="text-center">
+            Enter your email and password to access your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
               <Input
-                type="email"
                 id="email"
+                type="email"
                 placeholder="Enter your email"
-                className="w-full p-2 border border-red-300 rounded focus:outline-none  focus:border-red-500"
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
-
-            <div className="relative">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-red-600 mb-1"
-              >
-                Password
-              </label>
-              <Input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                placeholder="Enter your password"
-                className="w-full p-2 border border-red-300 rounded focus:outline-none focus:border-red-500"
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <div
-                onClick={togglePasswordVisibility}
-                className="absolute top-8 right-3 flex items-center cursor-pointer text-red-500"
-              >
-                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-5 w-5" aria-hidden="true" />
+                  )}
+                </button>
               </div>
             </div>
-
-            <Button
-              onClick={handleSignIn}
-              className="w-full py-2 mt-4 bg-red-500 text-white rounded-lg hover:bg-red-600"
-            >
-              Sign In
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
-          <span className="text-neutral-400 text-center flex justify-center py-5">
-            Don't have a account?{" "}
-            <Link className="text-red-500 hover:underline ml-1" to="/sign-up">
-              SignUp
+        </CardContent>
+        <CardFooter className="flex flex-col items-center">
+          <p className="text-sm text-gray-500 mt-2">
+            Don't have an account?{" "}
+            <Link to="/sign-up" className="text-orange-600 hover:underline">
+              Sign Up
             </Link>
-          </span>
-        </div>
-      </div>
-      <footer className="w-full bg-red-600 text-white text-center py-6">
-        <p>© 2024 DeliveryApp. All rights reserved.</p>
+          </p>
+        </CardFooter>
+      </Card>
+      <footer className="mt-8 text-center text-sm text-gray-500">
+        © 2024 QuickEats. All rights reserved.
       </footer>
-    </>
+    </div>
   );
-};
-
-export default SignIn;
+}

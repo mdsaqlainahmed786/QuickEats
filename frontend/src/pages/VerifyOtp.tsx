@@ -1,27 +1,29 @@
+
+
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useRecoilState } from "recoil";
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { usernameState } from "@/RecoilStates/UserDetails";
+import { useToast } from "@/hooks/use-toast";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { useRecoilState } from "recoil";
-import { usernameState } from "@/RecoilStates/UserDetails";
 
-const VerifyOtp = () => {
+export default function VerifyOtp() {
   const [otp, setOtp] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [username, setUsername] = useRecoilState(usernameState);
   const navigate = useNavigate();
-
+  const { toast } = useToast();
   useEffect(() => {
     if (username) {
-      navigate("/maps");
+      navigate("/dishes");
     }
-  
   }, [username, navigate]);
 
   useEffect(() => {
@@ -34,13 +36,12 @@ const VerifyOtp = () => {
 
         if (response.data.message === "Enter otp") {
           setErrorMessage(null);
-          return
-        } 
+          return;
+        }
         if (username) {
-          navigate("/maps");
-        } 
-        else {
-          navigate("/sign-up");
+          navigate("/dishes")
+        } else {
+          navigate("/sign-up")
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
@@ -48,7 +49,7 @@ const VerifyOtp = () => {
             error.response.data.error === "Session expired" ||
             error.response.data.error === "Unauthorized to enter otp"
           ) {
-            navigate("/sign-up");
+              navigate("/sign-up")
           } else {
             setErrorMessage("An error occurred. Please try again.");
           }
@@ -61,7 +62,11 @@ const VerifyOtp = () => {
 
   const handleSubmit = async () => {
     if (!otp) {
-      alert("OTP is required");
+      toast({
+        title: "Invalid OTP",
+        description: "Please enter the OTP sent to your email.",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -71,15 +76,22 @@ const VerifyOtp = () => {
         { otp },
         { withCredentials: true }
       );
-      console.log(response.data.userName);
       setUsername(response.data.userName);
-      alert("OTP submitted successfully: " + otp);
+      toast({
+        title: "OTP Verified",
+        description: "Your OTP has been verified successfully.",
+      });
+       
       navigate("/maps");
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         setErrorMessage("Invalid OTP. Please try again.");
         if (error.response.data.error === "Session expired") {
-          alert("Session expired. Redirecting to signup page.");
+          toast({
+            title: "Session expired",
+            description: "Your session has expired. Please sign up again.",
+            variant: "destructive",
+          });
           navigate("/sign-up");
         }
       } else {
@@ -89,58 +101,78 @@ const VerifyOtp = () => {
   };
 
   return (
-    <>
-      <div className="flex justify-center items-center min-h-screen bg-white px-4">
-        <div className="w-full max-w-md p-8 bg-red-50 rounded-lg shadow-lg">
-          <h2 className="text-3xl font-bold text-center text-red-500 mb-4">
+    <div className="min-h-screen bg-[#FFF5EB]">
+      <main className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[calc(100vh-136px)]">
+        <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+          <h1 className="text-2xl font-bold text-center text-[#FF4500] mb-2">
             Verify OTP
-          </h2>
-          <p className="text-neutral-600 text-center text-sm mb-6">
-            A 6-digit OTP has been sent to your registered email.
+          </h1>
+          <p className="text-gray-600 text-center mb-8">
+            Enter the verification code sent to your email
           </p>
-          <div className="flex justify-center">
-            <InputOTP
-              maxLength={6}
-              value={otp}
-              onChange={(value) => setOtp(value)}
-              className="flex justify-center mb-6 space-x-2"
-            >
-              <InputOTPGroup className="border-red-600">
-                <InputOTPSlot index={0} className="border-red-400" />
-                <InputOTPSlot index={1} className="border-red-400" />
-                <InputOTPSlot index={2} className="border-red-400" />
-              </InputOTPGroup>
-              <InputOTPSeparator />
-              <InputOTPGroup>
-                <InputOTPSlot index={3} className="border-red-400" />
-                <InputOTPSlot index={4} className="border-red-400" />
-                <InputOTPSlot index={5} className="border-red-400" />
-              </InputOTPGroup>
-            </InputOTP>
-          </div>
-          {errorMessage && (
-            <p className="text-red-500 text-center mb-4">{errorMessage}</p>
-          )}
-          <div className="flex justify-center">
+
+          <div className="space-y-6">
+            <div className="flex justify-center">
+              <InputOTP
+                maxLength={6}
+                value={otp}
+                onChange={(value) => setOtp(value)}
+                className="gap-2"
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot
+                    index={0}
+                    className="w-10 h-12 border-gray-200 bg-gray-50 focus:border-[#FF4500] focus:ring-[#FF4500]"
+                  />
+                  <InputOTPSlot
+                    index={1}
+                    className="w-10 h-12 border-gray-200 bg-gray-50 focus:border-[#FF4500] focus:ring-[#FF4500]"
+                  />
+                  <InputOTPSlot
+                    index={2}
+                    className="w-10 h-12 border-gray-200 bg-gray-50 focus:border-[#FF4500] focus:ring-[#FF4500]"
+                  />
+                </InputOTPGroup>
+                <InputOTPSeparator />
+                <InputOTPGroup>
+                  <InputOTPSlot
+                    index={3}
+                    className="w-10 h-12 border-gray-200 bg-gray-50 focus:border-[#FF4500] focus:ring-[#FF4500]"
+                  />
+                  <InputOTPSlot
+                    index={4}
+                    className="w-10 h-12 border-gray-200 bg-gray-50 focus:border-[#FF4500] focus:ring-[#FF4500]"
+                  />
+                  <InputOTPSlot
+                    index={5}
+                    className="w-10 h-12 border-gray-200 bg-gray-50 focus:border-[#FF4500] focus:ring-[#FF4500]"
+                  />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+
+            {errorMessage && (
+              <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+            )}
+
             <Button
               onClick={handleSubmit}
-              type="submit"
-              className="w-[65%] text-center bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg py-2 mt-4"
+              className="w-full py-2 px-4 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
             >
-              Submit
+              Verify Code
             </Button>
+
+            <p className="text-sm text-center text-gray-500">
+              This otp will expire in{" "}
+              <span className="text-[#FF4500]">5 minutes</span>
+            </p>
           </div>
-
-          <p className="text-neutral-600 text-center text-sm mt-4">
-            This OTP will expire in 5 minutes.
-          </p>
         </div>
-      </div>
-      <footer className="w-full bg-red-600 text-white text-center py-6">
-        <p>© 2024 DeliveryApp. All rights reserved.</p>
-      </footer>
-    </>
-  );
-};
+      </main>
 
-export default VerifyOtp;
+      <footer className="text-center py-4 text-gray-600 text-sm">
+        © 2024 QuickEats. All rights reserved.
+      </footer>
+    </div>
+  );
+}
