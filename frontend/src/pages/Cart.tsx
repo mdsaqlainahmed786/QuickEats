@@ -57,7 +57,7 @@ const Cart = () => {
               </div>
             </div>
             <div className="text-lg font-bold text-gray-800 md:mr-6">
-              ₹{cartItem.price}
+              ${cartItem.price}
             </div>
             <button
               onClick={() => onRemoveCartItem(cartItem.id)}
@@ -74,12 +74,11 @@ const Cart = () => {
           <span className="text-red-600">₹{total}</span>
         </div>
 
-        <button
-  onClick={async () => {
-    try {
+        <button onClick={async () => {
+       try {
       const response = await axios.post(
         "http://localhost:3000/api/v1/payments/pay",
-        { total },
+        { total, cartItems: cart },
         { withCredentials: true }
       );
 
@@ -97,7 +96,7 @@ const Cart = () => {
   className="w-full bg-red-500 text-white py-3 mt-6 rounded hover:bg-red-600 font-semibold"
 >
   Proceed to Checkout {total}
-</button>
+        </button>
       </div>
     </div>
   );

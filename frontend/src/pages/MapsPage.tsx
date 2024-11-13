@@ -25,7 +25,13 @@ const MapsPage = () => {
     return null;
   }
 
-  return <PlaceComponent />;
+  return(
+    <>
+    <PlaceComponent />
+    
+    </>
+    
+    );
 };
 
 export default MapsPage;

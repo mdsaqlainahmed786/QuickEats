@@ -1,11 +1,12 @@
 import express from 'express';
 import paypal from 'paypal-rest-sdk';
+import { PrismaClient } from '@prisma/client';
 
 const paymentRouter = express.Router();
 
 const { PAYPAL_CLIENT_KEY, PAYPAL_SECRET_KEY, PAYPAL_MODE } = process.env;
 
-
+const prisma = new PrismaClient();
 paypal.configure({
     'mode': PAYPAL_MODE!,
     'client_id': PAYPAL_CLIENT_KEY!,
@@ -13,8 +14,9 @@ paypal.configure({
 });
 
 paymentRouter.post('/pay', (req, res) => {
-    const { total } = req.body;
+    const { total, cartItems } = req.body;
     console.log("THE TOTAL IS", total);
+    
     const create_payment_json = {
         intent: "sale",
         payer: {
@@ -26,13 +28,13 @@ paymentRouter.post('/pay', (req, res) => {
         },
         transactions: [{
             item_list: {
-                items: [{
-                    name: "Dishes",
-                    sku: "001",
-                    price: total,
+                items: cartItems.map((item: any) => ({
+                    name: item.title,
+                    sku: item.id,
+                    price: item.price,
                     currency: "USD",
                     quantity: 1
-                }]
+                }))
             },
             amount: {
                 currency: "USD",

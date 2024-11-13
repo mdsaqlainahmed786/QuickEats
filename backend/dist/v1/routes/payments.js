@@ -13,7 +13,6 @@ paypal_rest_sdk_1.default.configure({
     'client_secret': PAYPAL_SECRET_KEY
 });
 paymentRouter.post('/pay', (req, res) => {
-    console.log("THE ARE THE SECRETS 🤫🤫", PAYPAL_CLIENT_KEY, PAYPAL_SECRET_KEY, PAYPAL_MODE);
     const { total } = req.body;
     console.log("THE TOTAL IS", total);
     const create_payment_json = {

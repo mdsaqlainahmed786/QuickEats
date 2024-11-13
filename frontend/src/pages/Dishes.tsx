@@ -1,97 +1,107 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { Button } from "@/components/ui/button";
+
+import { useState, useEffect } from "react"
+import axios from "axios"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { ShoppingCart } from 'lucide-react'
 
 interface Dish {
-  id: number;
-  title: string;
-  category: string;
-  description: string;
-  price: number;
-  image: string;
+  id: number
+  title: string
+  category: string
+  description: string
+  price: number
+  image: string
 }
 
-const Dishes = () => {
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [dishes, setDishes] = useState<Dish[]>([]);
+export default function Dishes() {
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [dishes, setDishes] = useState<Dish[]>([])
 
   useEffect(() => {
     const fetchDishes = async () => {
       try {
         const response = await axios.get(
           "http://localhost:3000/api/v1/dishes/category/all"
-        );
-        setDishes(response.data);
+        )
+        setDishes(response.data)
       } catch (error) {
-        console.error("Fetching dishes failed:", error);
+        console.error("Fetching dishes failed:", error)
+        // toast({
+        //   title: "Error",
+        //   description: "Failed to fetch dishes. Please try again later.",
+        //   variant: "destructive",
+        // })
       }
-    };
-    fetchDishes();
-  }, []);
+    }
+    fetchDishes()
+  }, [])
+
   const handleAddToCart = (dish: Dish) => {
-    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    existingCart.push(dish);
-    localStorage.setItem("cart", JSON.stringify(existingCart));
-    alert("Dish added to cart successfully!");
-  };
+    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]")
+    existingCart.push(dish)
+    localStorage.setItem("cart", JSON.stringify(existingCart))
+    // toast({
+    //   title: "Added to Cart",
+    //   description: `${dish.title} has been added to your cart.`,
+    // })
+  }
+
+  const categories = ["all", "Main-Course", "starters", "Dessert"]
   const filteredDishes =
     selectedCategory === "all"
       ? dishes
-      : dishes.filter((dish) => dish.category === selectedCategory);
+      : dishes.filter((dish) => dish.category === selectedCategory)
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
-      <h1 className="text-3xl font-semibold text-center mb-8">Our Dishes</h1>
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-orange-100 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className="text-4xl font-bold text-center text-orange-800 mb-8">Our Dishes</h1>
 
-      {/* Filter bar */}
-      <div className="flex justify-center space-x-4 mb-6">
-        {["all", "Main-Course", "starters", "Dessert"].map((category) => (
-          <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
-            className={`px-4 py-2 rounded-full font-medium
-              ${
-                selectedCategory === category
-                  ? "bg-red-500 text-white"
-                  : "bg-gray-200 text-gray-700"
-              }
-              transition duration-300 hover:bg-red-500 hover:text-white`}
-          >
-            {category.charAt(0).toUpperCase() + category.slice(1)}
-          </button>
-        ))}
-      </div>
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-8">
+          <TabsList className="w-full justify-start">
+            {categories.map((category) => (
+              <TabsTrigger key={category} value={category} className="px-4 py-2">
+                {category.charAt(0).toUpperCase() + category.slice(1)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
-      <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {filteredDishes.map((dish) => (
-          <div
-            key={dish.id}
-            className="bg-white pb-20 shadow-md rounded-lg cursor-pointer p-4 text-center hover:shadow-xl  relative"
-          >
-            <div className="h-60 w-60 mx-auto mb-4 rounded-full overflow-hidden">
-              <img
-                src={dish.image}
-                alt={dish.title}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <h2 className="text-2xl font-semibold mb-2">{dish.title}</h2>
-            <p className="text-xl font-bold">₹{dish.price}</p>
-            <p className="text-gray-600 capitalize">{dish.category}</p>
-            <p className="text-gray-400">{dish.description.slice(0, 100)}...</p>
-            <div className="absolute bottom-0 left-0 right-0 mb-5">
-              <Button
-                onClick={() => handleAddToCart(dish)}
-                className="w-[85%] bg-red-500 transition duration-300 hover:bg-red-600"
-              >
-                Add to Cart
-              </Button>
-            </div>
-          </div>
-        ))}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredDishes.map((dish) => (
+            <Card key={dish.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
+              <CardHeader className="p-0">
+                <div className="h-48 overflow-hidden">
+                  <img
+                    src={dish.image}
+                    alt={dish.title}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="p-4">
+                <CardTitle className="text-xl font-semibold mb-2">{dish.title}</CardTitle>
+                <Badge variant="secondary" className="mb-2">
+                  {dish.category}
+                </Badge>
+                <p className="text-sm text-gray-600 mb-2">{dish.description.slice(0, 100)}...</p>
+                <p className="text-lg font-bold text-orange-600">₹{dish.price}</p>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  onClick={() => handleAddToCart(dish)} 
+                  className="w-full bg-orange-600 hover:bg-orange-700"
+                >
+                  <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
-  );
-};
-
-export default Dishes;
+  )
+}
