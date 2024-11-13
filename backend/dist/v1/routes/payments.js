@@ -5,15 +5,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const paypal_rest_sdk_1 = __importDefault(require("paypal-rest-sdk"));
+const client_1 = require("@prisma/client");
 const paymentRouter = express_1.default.Router();
 const { PAYPAL_CLIENT_KEY, PAYPAL_SECRET_KEY, PAYPAL_MODE } = process.env;
+const prisma = new client_1.PrismaClient();
 paypal_rest_sdk_1.default.configure({
     'mode': PAYPAL_MODE,
     'client_id': PAYPAL_CLIENT_KEY,
     'client_secret': PAYPAL_SECRET_KEY
 });
 paymentRouter.post('/pay', (req, res) => {
-    const { total } = req.body;
+    const { total, cartItems } = req.body;
     console.log("THE TOTAL IS", total);
     const create_payment_json = {
         intent: "sale",
@@ -26,13 +28,13 @@ paymentRouter.post('/pay', (req, res) => {
         },
         transactions: [{
                 item_list: {
-                    items: [{
-                            name: "Dishes",
-                            sku: "001",
-                            price: total,
-                            currency: "USD",
-                            quantity: 1
-                        }]
+                    items: cartItems.map((item) => ({
+                        name: item.title,
+                        sku: item.id,
+                        price: item.price,
+                        currency: "USD",
+                        quantity: 1
+                    }))
                 },
                 amount: {
                     currency: "USD",

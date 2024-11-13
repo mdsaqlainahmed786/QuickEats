@@ -1,6 +1,13 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { Trash2 } from "lucide-react";
 
 interface CartItem {
   id: number;
@@ -9,12 +16,13 @@ interface CartItem {
   price: number;
   image: string;
 }
-const Cart = () => {
+
+export default function Cart() {
   const [cart, setCart] = useState<CartItem[]>([]);
-
-  const [total, setTotal] = useState<number>(99);
-
+  const [total, setTotal] = useState<number>(0);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
   useEffect(() => {
     const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
     setCart(existingCart);
@@ -29,53 +37,14 @@ const Cart = () => {
     const updatedCart = cart.filter((item) => item.id !== id);
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
+    // toast({
+    //   title: "Item Removed",
+    //   description: "The item has been removed from your cart.",
+    // })
   };
-  return (
-    <div className="min-h-screen bg-white text-gray-800 p-4 md:p-6">
-      <h1 className="text-2xl md:text-3xl font-bold text-red-600 mb-4">
-        Your Cart
-      </h1>
 
-      <div className="border-t border-red-300 mt-4">
-        {/* Example Cart Item */}
-        {cart.map((cartItem) => (
-          <div
-            key={cartItem.id}
-            className="flex flex-col md:flex-row justify-between items-center py-4 border-b border-red-300 space-y-4 md:space-y-0"
-          >
-            <div className="flex items-center space-x-4 w-full md:w-auto">
-              <img
-                src={cartItem.image}
-                alt="Dish Thumbnail"
-                className="w-20 h-20 object-cover rounded-full"
-              />
-              <div>
-                <h2 className="text-lg font-semibold text-red-600">
-                  {cartItem.title}
-                </h2>
-                <p className="text-gray-600">Category - {cartItem.category}</p>
-              </div>
-            </div>
-            <div className="text-lg font-bold text-gray-800 md:mr-6">
-              ${cartItem.price}
-            </div>
-            <button
-              onClick={() => onRemoveCartItem(cartItem.id)}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full md:w-auto"
-            >
-              Remove
-            </button>
-          </div>
-        ))}
-
-        {/* Total Section */}
-        <div className="flex justify-between items-center mt-6 text-lg md:text-xl font-bold text-gray-800">
-          <h2>Total</h2>
-          <span className="text-red-600">₹{total}</span>
-        </div>
-
-        <button onClick={async () => {
-       try {
+  const handleCheckout = async () => {
+    try {
       const response = await axios.post(
         "http://localhost:3000/api/v1/payments/pay",
         { total, cartItems: cart },
@@ -84,22 +53,90 @@ const Cart = () => {
 
       const paymentLink = response.data.link;
       if (paymentLink) {
-        // Redirect the user to the PayPal approval URL
         window.location.href = paymentLink;
       } else {
-        console.error("Payment link not received from server.");
+        throw new Error("Payment link not received from server.");
       }
     } catch (error) {
       console.error("Error initiating payment:", error);
+      toast({
+        title: "Checkout Failed",
+        description:
+          "There was an error processing your payment. Please try again.",
+        variant: "destructive",
+      });
     }
-  }}
-  className="w-full bg-red-500 text-white py-3 mt-6 rounded hover:bg-red-600 font-semibold"
->
-  Proceed to Checkout {total}
-        </button>
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-orange-100 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold text-orange-800 mb-8">Your Cart</h1>
+
+        {cart.length === 0 ? (
+          <Card className="p-6 text-center">
+            <p className="text-lg text-gray-600">Your cart is empty.</p>
+            <Button
+              onClick={() => navigate("/dishes")}
+              className="mt-4 bg-orange-600 hover:bg-orange-700"
+            >
+              Browse Dishes
+            </Button>
+          </Card>
+        ) : (
+          <>
+            {cart.map((cartItem) => (
+              <Card key={cartItem.id} className="mb-4 overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-4">
+                    <img
+                      src={cartItem.image}
+                      alt={cartItem.title}
+                      className="w-20 h-20 object-cover rounded-md"
+                    />
+                    <div className="flex-grow">
+                      <h2 className="text-lg font-semibold text-orange-800">
+                        {cartItem.title}
+                      </h2>
+                      <p className="text-sm text-gray-600">
+                        Category: {cartItem.category}
+                      </p>
+                    </div>
+                    <div className="text-lg font-bold text-orange-600">
+                      ${cartItem.price}
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="bg-gray-50 flex justify-end p-2">
+                  <Button
+                    onClick={() => onRemoveCartItem(cartItem.id)}
+                    variant="destructive"
+                    size="sm"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" /> Remove
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+
+            <Separator className="my-6" />
+
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800">Total</h2>
+              <span className="text-2xl font-bold text-orange-600">
+                ${total}
+              </span>
+            </div>
+
+            <Button
+              onClick={handleCheckout}
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded font-semibold"
+            >
+              Proceed to Checkout (${total})
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );
-};
-
-export default Cart;
+}
