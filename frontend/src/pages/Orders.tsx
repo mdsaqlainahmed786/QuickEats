@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { format } from "date-fns";
 import axios from "axios"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { CalendarIcon, PackageIcon } from "lucide-react"
+import { CalendarIcon, PackageIcon, Clock10Icon } from "lucide-react"
 
 interface OrderItem {
   title: string
@@ -55,12 +56,15 @@ export default function Orders() {
                 <CardHeader className="bg-orange-100">
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-lg font-semibold text-orange-800">
-                      Order #{order.id}
+                      Order #{order.id.split("-")[0]}
                     </CardTitle>
                   </div>
                   <div className="flex items-center text-sm text-gray-500 mt-2">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {order.createdAt}
+                    {format(new Date(order.createdAt), "dd MMM yyyy")}
+                    <Clock10Icon className="mx-2 h-4 w-4" />
+                    {format(new Date(order.createdAt), "HH:mm")}
+
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -74,7 +78,7 @@ export default function Orders() {
                         />
                         <div className="flex-1">
                           <p className="font-semibold text-gray-800">{item.title}</p>
-                          <p className="text-sm text-gray-500">₹{item.price}</p>
+                          <p className="text-sm text-gray-500">${item.price}</p>
                         </div>
                       </div>
                     ))}
@@ -87,7 +91,7 @@ export default function Orders() {
                     <span className="text-sm text-gray-600">{order.orderItem.length} items</span>
                   </div>
                   <p className="text-lg font-bold text-orange-600">
-                    Total: ₹{order.total}
+                    Total: ${order.total}
                   </p>
                 </CardFooter>
               </Card>

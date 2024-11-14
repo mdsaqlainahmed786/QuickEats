@@ -11,8 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Search } from "lucide-react";
-import { useRecoilValue } from "recoil";
-import { totalPrice } from "@/RecoilStates/TotalPrice";
 import axios from "axios";
 
 interface Position {
@@ -135,6 +133,7 @@ export const PlaceComponent = () => {
       const paymentLink = response.data.link;
       if (paymentLink) {
         window.location.href = paymentLink;
+        localStorage.removeItem("cart");
       } else {
         throw new Error("Payment link not received from server.");
       }

@@ -13,6 +13,7 @@ ordersRouter.get('/', (req, res) => {
 });
 
 
+
 ordersRouter.get('/all', async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.user?.userId;
     try {
