@@ -19,46 +19,16 @@ const prisma = new client_1.PrismaClient();
 ordersRouter.get('/', (req, res) => {
     res.send('GET /orders');
 });
-ordersRouter.post('/add', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const auhenticatedRequest = req;
-    if (!auhenticatedRequest.user) {
-        res.status(401).json({ message: "Please login" });
-        return;
-    }
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
-    const { cartItems } = req.body;
-    try {
-        const total = cartItems.reduce((acc, item) => acc + item.price, 0);
-        const order = yield prisma.order.create({
-            data: {
-                total,
-                user: {
-                    connect: { id: userId }
-                },
-                orderItem: {
-                    create: cartItems.map((item) => ({
-                        title: item.title,
-                        price: item.price,
-                        image: item.image,
-                    }))
-                }
-            },
-            include: { orderItem: true },
-        });
-        res.json({ message: "Order added successfully", order, total, cartItems });
-    }
-    catch (error) {
-        console.log(error);
-    }
-}));
 ordersRouter.get('/all', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
-    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId;
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
     try {
         const orders = yield prisma.order.findMany({
             where: {
                 userId
+            },
+            orderBy: {
+                createdAt: 'desc'
             },
             include: {
                 orderItem: true

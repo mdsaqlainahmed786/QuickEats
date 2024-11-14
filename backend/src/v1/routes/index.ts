@@ -21,7 +21,7 @@ const PORT = 3000;
 app.use('/api/v1/users', UserRouter);
 app.use('/api/v1/dishes', dishRouter);
 app.use('/api/v1/orders', orderMiddleWare, ordersRouter);
- app.use('/api/v1/payments', paymentRouter);
+ app.use('/api/v1/payments',orderMiddleWare, paymentRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
