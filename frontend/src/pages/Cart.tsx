@@ -1,8 +1,5 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -37,36 +34,36 @@ export default function Cart() {
     const updatedCart = cart.filter((item) => item.id !== id);
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
-    // toast({
-    //   title: "Item Removed",
-    //   description: "The item has been removed from your cart.",
-    // })
+    toast({
+      title: "Item Removed",
+      description: "The item has been removed from your cart.",
+    })
   };
 
-  const handleCheckout = async () => {
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/api/v1/payments/pay",
-        { total, cartItems: cart },
-        { withCredentials: true }
-      );
+  // const handleCheckout = async () => {
+  //   try {
+  //     const response = await axios.post(
+  //       "http://localhost:3000/api/v1/payments/pay",
+  //       { total, cartItems: cart },
+  //       { withCredentials: true }
+  //     );
 
-      const paymentLink = response.data.link;
-      if (paymentLink) {
-        window.location.href = paymentLink;
-      } else {
-        throw new Error("Payment link not received from server.");
-      }
-    } catch (error) {
-      console.error("Error initiating payment:", error);
-      toast({
-        title: "Checkout Failed",
-        description:
-          "There was an error processing your payment. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  //     const paymentLink = response.data.link;
+  //     if (paymentLink) {
+  //       window.location.href = paymentLink;
+  //     } else {
+  //       throw new Error("Payment link not received from server.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error initiating payment:", error);
+  //     toast({
+  //       title: "Checkout Failed",
+  //       description:
+  //         "There was an error processing your payment. Please try again.",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-orange-100 py-8">
@@ -129,7 +126,7 @@ export default function Cart() {
             </div>
 
             <Button
-              onClick={handleCheckout}
+              onClick={() => navigate("/add-address")}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded font-semibold"
             >
               Proceed to Checkout (${total})

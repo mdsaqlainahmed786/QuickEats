@@ -10,11 +10,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 import { useGetUser } from "@/hooks/useGetUser";
 import { usernameState } from "@/RecoilStates/UserDetails";
-import { Menu, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 
 export default function Header() {
   const { user, isLoading } = useGetUser();
@@ -104,10 +103,10 @@ export default function Header() {
         </Link>
         <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="flex items-center space-x-2">
-            <div className="hidden sm:flex">
+            <div className="flex">
               <NavItems />
             </div>
-            <Sheet>
+            {/* <Sheet>
               <SheetTrigger asChild>
                 <Button
                   variant="ghost"
@@ -122,7 +121,7 @@ export default function Header() {
                   <NavItems />
                 </nav>
               </SheetContent>
-            </Sheet>
+            </Sheet> */}
           </nav>
         </div>
       </div>

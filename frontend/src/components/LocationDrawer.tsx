@@ -29,17 +29,17 @@ export function LocationDrawer({ onAccept }: { onAccept: () => void }) {
       <DrawerContent>
         <DrawerHeader>
           <div className="flex flex-col space-y-7 justify-center items-center">
-            <FaLocationDot className="text-4xl text-red-600" />
-            <DrawerTitle className="text-2xl font-bold text-red-600">Allow Location Access</DrawerTitle>
+            <FaLocationDot className="text-4xl text-orange-600" />
+            <DrawerTitle className="text-2xl font-bold text-orange-600">Allow Location Access</DrawerTitle>
             <DrawerDescription>
               We need access to your location for the map feature.
             </DrawerDescription>
           </div>
         </DrawerHeader>
         <DrawerFooter>
-          <Button className="bg-red-500 hover:bg-red-700" onClick={handleAccept}>Allow</Button>
+          <Button className="bg-orange-500 hover:bg-orange-700" onClick={handleAccept}>Allow</Button>
           <DrawerClose>
-            <Button variant="outline" className="text-red-500 hover:text-red-700" onClick={handleDeny}>
+            <Button variant="outline" className="text-orange-500 hover:text-orange-700" onClick={handleDeny}>
               Deny
             </Button>
           </DrawerClose>
