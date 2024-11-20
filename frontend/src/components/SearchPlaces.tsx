@@ -27,10 +27,11 @@ interface CartItem {
 
 export const PlaceComponent = () => {
   const [currentPosition, setCurrentPosition] = useState<Position | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [manualPosition, setManualPosition] = useState<Position | null>(null);
   const [isEnteringManualAddress, setIsEnteringManualAddress] = useState(false);
   const [address, setAddress] = useState<string | null>(null);
- // const total = useRecoilValue(totalPrice);
+  // const total = useRecoilValue(totalPrice);
   const inputRef = useRef<google.maps.places.SearchBox | null>(null);
   const googleMapsApiKey = import.meta.env.VITE_MAPS_KEY;
   const [locationPermission, setLocationPermission] = useState(false);
@@ -57,7 +58,6 @@ export const PlaceComponent = () => {
     const total = cart.reduce((acc, item) => acc + item.price, 0);
     setTotal(total);
   }, [cart]);
-
 
   const enableGeolocation = () => {
     setLocationPermission(true);
@@ -123,6 +123,7 @@ export const PlaceComponent = () => {
     }
   };
   const handleCheckout = async () => {
+    setIsProcessingPayment(true); // Disable button
     try {
       const response = await axios.post(
         "http://localhost:3000/api/v1/payments/pay",
@@ -145,9 +146,10 @@ export const PlaceComponent = () => {
           "There was an error processing your payment. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsProcessingPayment(false); // Re-enable button on failure or completion
     }
   };
-
 
   const handlePlaceChanged = () => {
     if (inputRef.current) {
@@ -261,7 +263,7 @@ export const PlaceComponent = () => {
               <button
                 type="button"
                 onClick={handleCheckout}
-                disabled={!enablePayment}
+                disabled={!enablePayment || isProcessingPayment || total === 0}
                 className="text-gray-900 bg-orange-500 hover:bg-orange-500/90 focus:ring-4 focus:outline-none focus:ring-orange-500/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-[#F7BE38]/50 me-2 mb-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg

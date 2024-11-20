@@ -1,55 +1,62 @@
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
-import axios from "axios"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { CalendarIcon, PackageIcon, Clock10Icon } from "lucide-react"
+import axios from "axios";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { CalendarIcon, PackageIcon, Clock10Icon } from "lucide-react";
+import { Loader2Icon } from "lucide-react"; // Use any spinner icon available in your library
 
 interface OrderItem {
-  title: string
-  price: number
-  image: string
+  title: string;
+  price: number;
+  image: string;
 }
 
 interface Order {
-  id: string
-  createdAt: string
-  orderItem: OrderItem[]
-  total: number
-  status: string
+  id: string;
+  createdAt: string;
+  orderItem: OrderItem[];
+  total: number;
+  status: string;
 }
 
 export default function Orders() {
-  const [orders, setOrders] = useState<Order[]>([])
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Example data - Replace with actual data from your backend or database
     const fetchOrders = async () => {
       try {
         const response = await axios.get("http://localhost:3000/api/v1/orders/all", {
           withCredentials: true,
         });
-        const orders = response.data.orders.map((order:Order) => ({
+        const orders = response.data.orders.map((order: Order) => ({
           ...order,
           items: order.orderItem, // Map `orderItem` to `items`
         }));
         setOrders(orders);
-        console.log("Orders fetched", orders);
       } catch (error) {
-        console.log("Error fetching orders", error);
+        console.error("Error fetching orders", error);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    fetchOrders()
-  }, [orders])
+    fetchOrders();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-orange-100 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-bold text-orange-800 mb-8 text-center">My Orders</h1>
 
-        {orders.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center h-[50vh]">
+            <Loader2Icon className="h-10 w-10 animate-spin text-orange-800" />
+            <span className="ml-2 text-orange-800 font-medium">Loading orders...</span>
+          </div>
+        ) : orders.length > 0 ? (
           <div className="space-y-6">
             {orders.map((order) => (
               <Card key={order.id} className="overflow-hidden">
@@ -64,7 +71,6 @@ export default function Orders() {
                     {format(new Date(order.createdAt), "dd MMM yyyy")}
                     <Clock10Icon className="mx-2 h-4 w-4" />
                     {format(new Date(order.createdAt), "HH:mm")}
-
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -90,9 +96,7 @@ export default function Orders() {
                     <PackageIcon className="mr-2 h-5 w-5 text-orange-600" />
                     <span className="text-sm text-gray-600">{order.orderItem.length} items</span>
                   </div>
-                  <p className="text-lg font-bold text-orange-600">
-                    Total: ${order.total}
-                  </p>
+                  <p className="text-lg font-bold text-orange-600">Total: ${order.total}</p>
                 </CardFooter>
               </Card>
             ))}
@@ -104,5 +108,5 @@ export default function Orders() {
         )}
       </div>
     </div>
-  )
+  );
 }
