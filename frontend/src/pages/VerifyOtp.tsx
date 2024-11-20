@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
@@ -17,9 +15,11 @@ import {
 export default function VerifyOtp() {
   const [otp, setOtp] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [username, setUsername] = useRecoilState(usernameState);
   const navigate = useNavigate();
   const { toast } = useToast();
+
   useEffect(() => {
     if (username) {
       navigate("/dishes");
@@ -39,9 +39,9 @@ export default function VerifyOtp() {
           return;
         }
         if (username) {
-          navigate("/dishes")
+          navigate("/dishes");
         } else {
-          navigate("/sign-up")
+          navigate("/sign-up");
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
@@ -49,7 +49,7 @@ export default function VerifyOtp() {
             error.response.data.error === "Session expired" ||
             error.response.data.error === "Unauthorized to enter otp"
           ) {
-              navigate("/sign-up")
+            navigate("/sign-up");
           } else {
             setErrorMessage("An error occurred. Please try again.");
           }
@@ -65,11 +65,12 @@ export default function VerifyOtp() {
       toast({
         title: "Invalid OTP",
         description: "Please enter the OTP sent to your email.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
+    setLoading(true); // Start loading
     try {
       const response = await axios.post(
         "http://localhost:3000/api/v1/users/verify-otp",
@@ -81,7 +82,7 @@ export default function VerifyOtp() {
         title: "OTP Verified",
         description: "Your OTP has been verified successfully.",
       });
-       
+
       navigate("/maps");
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -97,6 +98,8 @@ export default function VerifyOtp() {
       } else {
         setErrorMessage("An error occurred. Please try again.");
       }
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -158,12 +161,13 @@ export default function VerifyOtp() {
             <Button
               onClick={handleSubmit}
               className="w-full py-2 px-4 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+              disabled={otp.length < 6 || loading}
             >
-              Verify Code
+              {loading ? "Submitting..." : "Verify Code"}
             </Button>
 
             <p className="text-sm text-center text-gray-500">
-              This otp will expire in{" "}
+              This OTP will expire in{" "}
               <span className="text-[#FF4500]">5 minutes</span>
             </p>
           </div>

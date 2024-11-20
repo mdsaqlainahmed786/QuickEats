@@ -4,6 +4,7 @@ import { useRecoilState } from "recoil";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cartState } from "@/RecoilStates/CartItem";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,7 @@ import { ShoppingCart } from "lucide-react";
 
 export default function Header() {
   const { user, isLoading } = useGetUser();
+  const [cartItems, setCartItems] = useRecoilState(cartState);
   const navigate = useNavigate();
   const [username, setUsername] = useRecoilState(usernameState);
   const { toast } = useToast();
@@ -52,6 +54,12 @@ export default function Header() {
     }
   }, [user, isLoading, setUsername]);
 
+  useEffect(()=>{
+  const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
+  setCartItems(existingCart.length);
+
+  },[cartItems, setCartItems])
+
   const NavItems = () => (
     <>
       {isLoading ? (
@@ -74,7 +82,9 @@ export default function Header() {
                 <div className="text-xs text-muted-foreground">{username}</div>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onLogout}>Log out</DropdownMenuItem>
-              <DropdownMenuItem onClick={()=>navigate('/orders')}>My Orders</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/orders")}>
+                My Orders
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -89,9 +99,15 @@ export default function Header() {
         </>
       )}
 
-      <Link to="/cart">
-        <ShoppingCart className="h-7 w-7 ml-5" />
-      </Link>
+<Link to="/cart">
+  <div className="relative inline-block">
+    <ShoppingCart className="h-8 w-8 ml-5" />
+    <div className="absolute bg-orange-500 top-1 right-0 translate-x-1/2 -translate-y-1/2 text-[13px] px-1.5 rounded-full text-white">
+      {cartItems}
+    </div>
+  </div>
+</Link>
+
     </>
   );
 

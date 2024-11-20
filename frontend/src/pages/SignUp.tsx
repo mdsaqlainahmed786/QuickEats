@@ -1,42 +1,43 @@
-
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { useRecoilValue } from "recoil"
-import axios from "axios"
-import { Eye, EyeOff } from 'lucide-react'
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import {Link} from "react-router-dom"
-import { usernameState } from "@/RecoilStates/UserDetails"
-import { useToast } from "@/hooks/use-toast"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import axios from "axios";
+import { Eye, EyeOff } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { usernameState } from "@/RecoilStates/UserDetails";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SignUp() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [userName, setUserName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const navigate = useNavigate()
-  const username = useRecoilValue(usernameState)
-  const { toast } = useToast()
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const navigate = useNavigate();
+  const username = useRecoilValue(usernameState);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (username) {
-      navigate("/")
+      navigate("/");
     }
-  }, [username, navigate])
+  }, [username, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    setIsLoading(true); // Start loading
     try {
       if (password !== confirmPassword) {
         toast({
           title: "Passwords do not match",
           description: "Please make sure your passwords match.",
           variant: "destructive",
-        })
-        return
+        });
+        return;
       }
       const response = await axios.post(
         "http://localhost:3000/api/v1/users/sign-up",
@@ -46,29 +47,32 @@ export default function SignUp() {
           password,
         },
         { withCredentials: true }
-      )
+      );
       toast({
         title: "Sign up successful",
         description: "Please verify your email to continue.",
-      })
-      console.log(response.data)
-      navigate("/verify-otp")
-      window.location.reload()
+      });
+      console.log(response.data);
+      navigate("/verify-otp");
+      window.location.reload();
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        console.log(error.response.data)
+        console.log(error.response.data);
       } else {
-        console.log(error)
+        console.log(error);
       }
+    } finally {
+      setIsLoading(false); // End loading
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[#FFF5EB]">
-
       <main className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[calc(100vh-136px)]">
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-2xl font-bold text-center text-[#FF4500] mb-2">Sign Up</h1>
+          <h1 className="text-2xl font-bold text-center text-[#FF4500] mb-2">
+            Sign Up
+          </h1>
           <p className="text-gray-600 text-center mb-6">
             Create your account to get started
           </p>
@@ -82,7 +86,7 @@ export default function SignUp() {
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF4500]"
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none"
                 placeholder="Enter your username"
                 required
               />
@@ -96,7 +100,7 @@ export default function SignUp() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF4500]"
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none"
                 placeholder="Enter your email"
                 required
               />
@@ -111,7 +115,7 @@ export default function SignUp() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF4500]"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none"
                   placeholder="Enter your password"
                   required
                 />
@@ -134,7 +138,7 @@ export default function SignUp() {
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF4500]"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:outline-none"
                   placeholder="Confirm your password"
                   required
                 />
@@ -151,8 +155,9 @@ export default function SignUp() {
             <Button
               type="submit"
               className="w-full py-2 px-4 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+              disabled={isLoading} // Disable button when loading
             >
-              Sign Up
+              {isLoading ? "Signing Up..." : "Sign Up"}
             </Button>
           </form>
 
@@ -169,5 +174,5 @@ export default function SignUp() {
         © 2024 QuickEats. All rights reserved.
       </footer>
     </div>
-  )
+  );
 }

@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
@@ -30,14 +28,50 @@ export default function SignIn() {
   const username = useRecoilValue(usernameState);
   const setUsername = useSetRecoilState(usernameState);
 
+  // Check if user is already signed in
   useEffect(() => {
     if (username) {
+      toast({
+        title: "Already signed in",
+        description: "Redirecting you to the home page.",
+      });
       navigate("/");
     }
-  }, [username, navigate]);
+  }, [username, navigate, toast]);
+
+  const validateForm = () => {
+    if (!email || !password) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all fields before submitting.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setIsLoading(true);
     try {
       const response = await axios.post(
@@ -54,9 +88,13 @@ export default function SignIn() {
       window.location.reload();
     } catch (error) {
       console.error("Sign in failed:", error);
+      const errorMsg =
+        axios.isAxiosError(error) && error.response?.data?.message
+          ? error.response.data.message
+          : "Please check your credentials.";
       toast({
         title: "Sign in failed",
-        description: "Please check your email and password and try again.",
+        description: errorMsg,
         variant: "destructive",
       });
     } finally {

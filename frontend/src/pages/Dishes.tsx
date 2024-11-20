@@ -9,6 +9,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSetRecoilState } from "recoil";
+import { cartState } from "@/RecoilStates/CartItem";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -25,10 +27,14 @@ interface Dish {
 export default function Dishes() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [dishes, setDishes] = useState<Dish[]>([]);
+  const [loading, setLoading] = useState(true); // Loader state
+  const setCartItems = useSetRecoilState(cartState);
   const { toast } = useToast();
+
   useEffect(() => {
     const fetchDishes = async () => {
       try {
+        setLoading(true); // Start loading
         const response = await axios.get(
           "http://localhost:3000/api/v1/dishes/category/all"
         );
@@ -40,15 +46,18 @@ export default function Dishes() {
           description: "Failed to fetch dishes. Please try again later.",
           variant: "destructive",
         });
+      } finally {
+        setLoading(false); // End loading
       }
     };
     fetchDishes();
-  }, []);
+  }, [toast]);
 
   const handleAddToCart = (dish: Dish) => {
     const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
     existingCart.push(dish);
     localStorage.setItem("cart", JSON.stringify(existingCart));
+    setCartItems(existingCart.length);
     toast({
       title: "Added to Cart",
       description: `${dish.title} has been added to your cart.`,
@@ -86,46 +95,54 @@ export default function Dishes() {
           </TabsList>
         </Tabs>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredDishes.map((dish) => (
-            <Card
-              key={dish.id}
-              className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
-            >
-              <CardHeader className="p-0">
-                <div className="h-48 overflow-hidden">
-                  <img
-                    src={dish.image}
-                    alt={dish.title}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="p-4">
-                <CardTitle className="text-xl font-semibold mb-2">
-                  {dish.title}
-                </CardTitle>
-                <Badge variant="secondary" className="mb-2">
-                  {dish.category}
-                </Badge>
-                <p className="text-sm text-gray-600 mb-2">
-                  {dish.description.slice(0, 100)}...
-                </p>
-                <p className="text-lg font-bold text-orange-600">
-                  ${dish.price}
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  onClick={() => handleAddToCart(dish)}
-                  className="w-full bg-orange-600 hover:bg-orange-700"
-                >
-                  <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center min-h-[200px]">
+            <p className="text-orange-600 text-xl font-semibold">Loading...</p>
+          </div>
+        ) : filteredDishes.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredDishes.map((dish) => (
+              <Card
+                key={dish.id}
+                className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
+              >
+                <CardHeader className="p-0">
+                  <div className="h-48 overflow-hidden">
+                    <img
+                      src={dish.image}
+                      alt={dish.title}
+                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <CardTitle className="text-xl font-semibold mb-2">
+                    {dish.title}
+                  </CardTitle>
+                  <Badge variant="secondary" className="mb-2">
+                    {dish.category}
+                  </Badge>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {dish.description.slice(0, 100)}...
+                  </p>
+                  <p className="text-lg font-bold text-orange-600">
+                    ${dish.price}
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  <Button
+                    onClick={() => handleAddToCart(dish)}
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                  >
+                    <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-gray-500">No dishes available.</p>
+        )}
       </div>
     </div>
   );
